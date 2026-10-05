@@ -1,0 +1,92 @@
+schema_version: 1
+source_of_record: Zenodo
+audited: 2026-10-05
+policy: "This manifest records the exact public files exposed by closed Zenodo records. Zenodo remains the archival authority."
+
+records:
+  - id: R-01
+    version: v1.1
+    doi: 10.5281/zenodo.21406620
+    published: 2026-07-22
+    license: CC-BY-4.0
+    files:
+      - {name: "R-01_v1.1_EN.docx", size: "19.1 kB", md5: "958f38fb3179358f493e646ca9335e21"}
+      - {name: "R-01_v1.1_EN_ptc.zip", size: "89.0 kB", md5: "8ccba11cd4c846d1eb9454de49a92bdf"}
+      - {name: "R-01_v1.1_ES.docx", size: "19.5 kB", md5: "73841abc52657d1620220e6cca6b94e0"}
+      - {name: "R-01_v1.1_ES_ptc.zip", size: "93.6 kB", md5: "539514c98b822a37b994c935cb5d3de3"}
+      - {name: "R-01_v1.1_FR.docx", size: "20.0 kB", md5: "c4a887c4fcf2b29d1fbaf83ac4d820c1"}
+      - {name: "R-01_v1.1_FR_ptc.zip", size: "97.4 kB", md5: "2c736d5b0dd274fd1a648388a30c4dfe"}
+
+  - id: PTC-F
+    version: v1.2
+    doi: 10.5281/zenodo.21406680
+    published: 2026-07-22
+    license: CC-BY-4.0
+    files:
+      - {name: "PTC-F_v1.2_EN.docx", size: "20.3 kB", md5: "59db720a7fc44add283ff4215dee7869"}
+      - {name: "PTC-F_v1.2_EN_ptc.zip", size: "80.8 kB", md5: "b284cb804c828287bed687811128a4d5"}
+      - {name: "PTC-F_v1.2_ES.docx", size: "20.6 kB", md5: "4b80b059a13a734dcd0dd8faf15ccc77"}
+      - {name: "PTC-F_v1.2_ES_ptc.zip", size: "83.1 kB", md5: "172580600290c4f836a355022010215b"}
+      - {name: "PTC-F_v1.2_FR.docx", size: "21.0 kB", md5: "2632c9b2332ae578ae934827881788ec"}
+      - {name: "PTC-F_v1.2_FR_ptc.zip", size: "86.8 kB", md5: "6ac9aedaa5a4e0aaf0e55abb28362fda"}
+
+  - id: ARCH
+    version: v0.3
+    doi: 10.5281/zenodo.21406665
+    published: 2026-07-22
+    license: CC-BY-4.0
+    files:
+      - {name: "ARCH_v0.3_EN.docx", size: "21.9 kB", md5: "95e5254531000faf0c0c44e4b3d7759f"}
+      - {name: "ARCH_v0.3_EN_ptc.zip", size: "93.0 kB", md5: "c665b69906d69c1d0cfb5b0e4a2d2689"}
+      - {name: "ARCH_v0.3_ES.docx", size: "22.5 kB", md5: "49d75ac9499c463d5901c052f6f58421"}
+      - {name: "ARCH_v0.3_ES_ptc.zip", size: "97.5 kB", md5: "0ff40798973db32b130ecb5c6028c574"}
+      - {name: "ARCH_v0.3_FR.docx", size: "22.9 kB", md5: "abff921e1b88e8e1c26dcee5423bc164"}
+      - {name: "ARCH_v0.3_FR_ptc.zip", size: "100.1 kB", md5: "562299bda38c26dec580643dfdeed169"}
+
+  - id: FRS-01
+    version: v0.3
+    doi: 10.5281/zenodo.21830122
+    published: 2026-08-07
+    license: CC-BY-4.0
+    files:
+      - {name: "2026-08-09_FRS-01_file-reference-sha256-v1_v0.3_EN_TECHNICALLY_FROZEN_SHA256-95415ab27042a07e78ffb2af5790421c1fa6c4a61bcdd70e3bafe8a94e4c3afd.docx", size: "53.4 kB", md5: "481e2bd63fe6fc28d4f00f96faa4bfb4"}
+      - {name: "2026-08-09_FRS-01_file-reference-sha256-v1_v0.3_ES_CONGELADA_TECNICAMENTE_SHA256-f1ddde9ab5a26ab2c4d1f71b194cf29a21e2306b418c3b878d1c239d4318ecc6.docx", size: "53.9 kB", md5: "abef0ce3be046c116821180388ccc5cb"}
+      - {name: "2026-08-09_FRS-01_file-reference-sha256-v1_v0.3_FR_GELEE_TECHNIQUEMENT_SHA256-483a9cbb0a22dc660adfbc78d447c9b1cbb4dae8c7a1ed51678747b69e2435a1.docx", size: "54.5 kB", md5: "fe4053f77e2ed9dbcd209a81a719b71f"}
+      - {name: "2026-08-09_FRS-01_Informe_de_traduccion_trilingue.md", size: "2.6 kB", md5: "47dd76c307d21736e510684f76efe4ff"}
+      - {name: "2026-08-09_Validator_FRS-01_Trilingual_Package_SHA256-f765bd4d76b3ee93d2d2122a83ed6883e040245ff9b0d397d14a75920ff676c4.zip", size: "194.3 kB", md5: "5357e7afc4b91db446479cb2ee901752"}
+      - {name: "2026-08-09_Validator_FRS-01_Trilingual_Package_SHA256-f765bd4d76b3ee93d2d2122a83ed6883e040245ff9b0d397d14a75920ff676c4_ptc_frs01.zip", size: "274.5 kB", md5: "77ed920f2e064b688cdd1e682a040670"}
+      - {name: "2026-08-09_Validator_Glosario_Trilingue_y_Protocolo_de_Control_FRS-01_v2_SHA256-1e859996bc040aba5873e52517dc0e3ff9af153dc8ec5ced6ba6ff7c2ffef5ae.docx", size: "39.0 kB", md5: "3d9ec42e674d20ec14d7e4a77a8dd233"}
+      - {name: "ro-crate-metadata.json", size: "9.7 kB", md5: "d5f4c87151a79afb52cf65cc3879a686"}
+      - {name: "SHA256SUMS.txt", size: "1.5 kB", md5: "f6404209ac35dba4a87f388d13da8160"}
+
+  - id: PKG-02
+    version: v0.4
+    doi: 10.5281/zenodo.21830169
+    published: 2026-08-09
+    license: CC-BY-4.0
+    files:
+      - {name: "2026-08-09_PKG-02_Informe_de_traduccion_trilingue.md", size: "3.5 kB", md5: "316dcb4143052dcc5bf92dd126c5f8f2"}
+      - {name: "2026-08-09_PKG-02_Validator_Package_Format_2.0_v0.4_EN_TECHNICALLY_FROZEN_SHA256-abf127c57ccd233aa82a8f6160f067b1c30b03d51383460a4c2247d5e71bab6e.docx", size: "58.9 kB", md5: "4222be37d753bcff5c9cdee1c01a0b25"}
+      - {name: "2026-08-09_PKG-02_Validator_Package_Format_2.0_v0.4_ES_CONGELADA_TECNICAMENTE_SHA256-6f526919e84917a05877ee59f666edbbaad93ba05e10478d620636997b68491a.docx", size: "59.7 kB", md5: "d0bc8939be1798d93d4fa279d1beedc9"}
+      - {name: "2026-08-09_PKG-02_Validator_Package_Format_2.0_v0.4_FR_GELEE_TECHNIQUEMENT_SHA256-e39e4c4989a5b3f4f5b206d3aae8c218361eb3027db6ba4900985e209a10f1e4.docx", size: "60.4 kB", md5: "a950490d10d548b326ef823ec96959cd"}
+      - {name: "2026-08-09_Validator_Glosario_Trilingue_y_Protocolo_de_Control_v2_SHA256-afcc7203fed53586ae6501a6bcb02d53373b291a40aef845ba46317e4e46b2f7.docx", size: "40.8 kB", md5: "9f5df88974aa2a71423a8bcaeefd7f8d"}
+      - {name: "2026-08-09_Validator_PKG-02_Trilingual_Package_SHA256-9ebd9aebc9818dcaaa47f4b23b6d90c8924f8291a81323eb31544d29b0e19a9b.zip", size: "213.6 kB", md5: "ee6b07d6c255d481001bb8d0af7f889c"}
+      - {name: "2026-08-09_Validator_PKG-02_Trilingual_Package_SHA256-9ebd9aebc9818dcaaa47f4b23b6d90c8924f8291a81323eb31544d29b0e19a9b_ptc_frs01.zip", size: "293.9 kB", md5: "b6005f8b6966d28daae1b97388e70899"}
+      - {name: "ro-crate-metadata.json", size: "9.4 kB", md5: "51004fa8cef12f415dd63e1d39d11d01"}
+      - {name: "SHA256SUMS.txt", size: "1.5 kB", md5: "78f26f59e8724cd67e54cbfd56b32079"}
+
+  - id: DCL-03
+    version: v0.3
+    doi: 10.5281/zenodo.21830264
+    published: 2026-08-09
+    license: CC-BY-4.0
+    files:
+      - {name: "2026-08-09_DCL-03_disclosure-notice-v1_v0.3_EN_TECHNICALLY_FROZEN_SHA256-fca37c05a6e182c13210fd9d124b4f3c1398268c6b499f0b98bed89e6fb893b5.docx", size: "56.7 kB", md5: "d78c893c2f8c439a6adc27756efa175e"}
+      - {name: "2026-08-09_DCL-03_disclosure-notice-v1_v0.3_ES_CONGELADA_TECNICAMENTE_SHA256-e1b9ce5593b939b9c78eeb2ab35c0b558fcbea9b4289ee50132f4d30c00fb198.docx", size: "57.2 kB", md5: "17fbe9e5313f5cb0044695bb8024e573"}
+      - {name: "2026-08-09_DCL-03_disclosure-notice-v1_v0.3_FR_GELEE_TECHNIQUEMENT_SHA256-9bb6ca0cff27e711f77c0e93d052d58cafc1ecc8a269d7ada77fcb35c343861d.docx", size: "57.9 kB", md5: "0b5c47939aa2e601cb2734f924aaa6ca"}
+      - {name: "2026-08-09_DCL-03_Informe_de_traduccion_trilingue.md", size: "3.5 kB", md5: "a7558bb2d6f2913fb7c1c463eb5a4b88"}
+      - {name: "2026-08-09_MANIFIESTO_DCL-03_TRILINGUE.txt", size: "1.6 kB", md5: "d8901a98a72186ebc20f27cd4c5c2740"}
+      - {name: "2026-08-09_Validator_DCL-03_Trilingual_Package_SHA256-833c9d9daab36c27a25ad3b48ec04a9c076b0b7e325fecfb898d75bd4227e0ee.zip", size: "168.7 kB", md5: "9f2dda7f95a5b873edc8c1aea8541ab9"}
+      - {name: "2026-08-09_Validator_DCL-03_Trilingual_Package_SHA256-833c9d9daab36c27a25ad3b48ec04a9c076b0b7e325fecfb898d75bd4227e0ee_ptc_frs01.zip", size: "248.9 kB", md5: "903de8077a0b1965fb06aa327b48514e"}
+      - {name: "ro-crate-metadata.json", size: "9.3 kB", md5: "61a33ad41101873576f53a05a13805c0"}
+      - {name: "SHA256SUMS.txt", size: "1.3 kB", md5: "e7e042417200241091614a4e556a064a"}
