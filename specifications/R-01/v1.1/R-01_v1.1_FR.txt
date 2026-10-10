@@ -1,0 +1,199 @@
+SPÉCIFICATION DU TEXTE CANONIQUE DU
+PROTOCOLE DE TRANSPARENCE CANALISTE (PTC)
+R-01 · v 1.1
+Document normatif — référence d’implémentation de l’objet canonique
+21 juillet 2026 · ORCID: 0009-0000-8891-7021 · CC BY 4.0
+DOI: 10.5281/zenodo.21406620
+En cas de divergence entre les versions linguistiques de cette spécification, la version espagnole prévaut.
+Nature de ce document. Ce document définit les propriétés formelles de l’objet canonique du Protocole de Transparence Canaliste (PTC) : sa normalisation, le calcul des préimages des hachages, ainsi que le périmètre et l’extraction de l’artefact TXT. Il ne définit pas la sémantique des champs du bloc PTC ni les états globaux de validation — ces matières appartiennent respectivement à PTC-F et à ARCH, chacun avec un propriétaire normatif unique. Il s’agit d’une spécification du protocole, non d’une implémentation concrète quelconque. Toute implémentation qui produit l’objet canonique décrit ici est conforme, indépendamment du langage de programmation, de la plateforme ou de l’environnement d’exécution utilisés. L’identifiant normatif de ce document est R-01.
+Conventions normatives. DOIT et NE DOIT PAS expriment des exigences de conformité ; DEVRAIT exprime une bonne pratique recommandée mais non obligatoire ; PEUT exprime une option permise.
+Objet et identification
+Objet
+L’objet canonique résout un problème d’interopérabilité : garantir que deux documents au même contenu sémantique produisent le même hachage, indépendamment de différences non pertinentes telles que la marque d’ordre des octets, les sauts de ligne ou les espaces en fin de ligne.
+Identification normative
+L’identifiant normatif de ce document est R-01. Il est référencé par l’Architecture Normative du Protocole de Transparence Canaliste (PTC) v0.3 (DOI : 10.5281/zenodo.21406665) comme source des règles de normalisation de l’objet canonique.
+Glossaire
+Les termes suivants sont utilisés avec un sens technique précis dans l’ensemble du document :
+Principe de conformité
+Deux implémentations conformes doivent produire exactement le même objet canonique encodé et les mêmes valeurs de hachage pour une même entrée canonique. Si deux implémentations qui appliquent correctement ce document produisent des hachages différents sur la même entrée, au moins l’une d’elles contient une erreur d’implémentation.
+Partie I — Définition de l’objet canonique
+1.1 Ce qu’est l’objet canonique
+L’objet canonique est la représentation textuelle normalisée d’un contenu sur lequel une déclaration vérifiable est générée. Il constitue l’entrée au moteur du protocole et la base sur laquelle tous les hachages cryptographiques sont calculés.
+L’objet canonique possède deux propriétés formelles :
+Il s’agit d’une chaîne de caractères Unicode normalisée selon les règles définies dans la Partie II.
+Pour le calcul des hachages, cette chaîne est représentée en octets UTF-8 (objet canonique encodé). Cette représentation en octets est l’entrée directe à la fonction SHA-256.
+La distinction entre objet canonique (chaîne Unicode) et objet canonique encodé (octets UTF-8) est importante : l’artefact TXT stocke le texte comme chaîne Unicode ; les hachages sont toujours calculés sur les octets UTF-8 de cette chaîne. La conversion depuis d’autres encodages (UTF-16, Latin-1, Windows-1252) vers Unicode est hors du périmètre de cette spécification et relève de la responsabilité de l’adaptateur d’entrée.
+Lorsqu’aucun autre mode n’est spécifié, le protocole opère en Mode Contenu. Le Mode Référence doit être activé explicitement par l’utilisation de l’adaptateur CSV+URL, défini dans l’Architecture Normative du Protocole de Transparence Canaliste (PTC) v0.3.
+1.2 Ce que l’objet canonique n’est pas
+L’objet canonique n’est pas le fichier original. Il est le résultat de l’application des règles de normalisation définies dans ce document au contenu source.
+Deux fichiers différents peuvent produire le même objet canonique. Et un même fichier peut produire des objets canoniques différents si des règles de normalisation différentes sont appliquées.
+Partie II — Règles de normalisation
+Les règles suivantes sont appliquées dans un ordre strict à la chaîne de texte en entrée. Le résultat de l’application de toutes les règles est l’objet canonique.
+2.0 Normalisation Unicode
+Aucune normalisation Unicode n’est appliquée (NFC, NFD, NFKC ni équivalent). Les caractères Unicode sont conservés exactement tels qu’ils apparaissent dans le texte en entrée. Deux chaînes visuellement identiques mais avec des représentations Unicode différentes produiront des hachages distincts et sont toutes deux également valides. Il appartient à l’auteur ou à l’adaptateur d’entrée de garantir la cohérence de la représentation Unicode si cela est pertinent pour leur cas d’utilisation.
+2.1 Suppression de la marque d’ordre des octets (BOM)
+Si la chaîne commence par le caractère U+FEFF en position 0, ce caractère DOIT être supprimé. Les occurrences de U+FEFF à toute autre position sont conservées comme partie du contenu sémantique du document.
+Raison : la BOM en position initiale ne fait pas partie du contenu sémantique. U+FEFF en position non initiale est un caractère d’espace de largeur nulle avec une valeur sémantique propre.
+2.2 Normalisation des sauts de ligne
+Tous les sauts de ligne DOIVENT être convertis en LF (U+000A). Les séquences CRLF (U+000D U+000A) et les CR isolés (U+000D) DOIVENT être traités comme un unique LF. Aucun autre caractère n’est modifié durant cette étape.
+Raison : différents systèmes d’exploitation produisent différents sauts de ligne pour un même contenu.
+2.3 Suppression des espaces en fin de ligne
+Tous les espaces (U+0020) et tabulations (U+0009) DOIVENT être supprimés lorsqu’ils apparaissent immédiatement avant un caractère LF, ou lorsqu’ils apparaissent à la fin de la chaîne en entrée (c’est-à-dire après la dernière ligne, si celle-ci ne se termine pas par un LF au moment où cette règle est appliquée). Le caractère LF qui termine chaque ligne est conservé.
+Raison : les espaces finaux sont invisibles pour le lecteur humain mais modifient le hachage.
+2.4 Normalisation de la fin de l’objet canonique documentaire
+L’objet canonique documentaire DOIT se terminer par exactement un caractère LF. Si la chaîne se termine par plusieurs LF consécutifs, ils DOIVENT être réduits à un seul. S’il ne se termine par aucun LF, un DOIT être ajouté.
+Cette règle s’applique à l’objet canonique documentaire — le préfixe, avant d’annexer le bloc PTC. L’artefact canonique complet, une fois le bloc PTC annexé, suit une règle de terminaison différente : voir 5.1.
+2.5 Caractères de contrôle
+Tout caractère de contrôle autre que LF (U+000A), CR (U+000D), espace (U+0020) et tabulation (U+0009) est considéré comme contenu sémantique du document et DOIT être conservé sans modification.
+Note : cette règle couvre des caractères tels que NULL (U+0000), tabulation verticale (U+000B), saut de page (U+000C) et NEL (U+0085).
+2.6 Encodage pour le calcul des hachages
+Après application des règles 2.0 à 2.5, la chaîne Unicode résultante (objet canonique) est représentée en octets UTF-8. Cette représentation (objet canonique encodé) est l’entrée directe à la fonction SHA-256. Aucune autre transformation d’encodage n’est appliquée.
+Partie III — La chaîne de référence canonique
+Lorsque l’objet certifié n’est pas un contenu textuel mais une référence documentaire (Mode Référence), le moteur opère sur une chaîne de référence canonique.
+3.1 Composition
+La chaîne de référence canonique est construite en concaténant deux lignes, dans cet ordre exact :
+CSV: <valeur>
+URL: <valeur>
+La première ligne contient l’étiquette littérale «CSV: » suivie du code sécurisé de vérification (CSV) ou de l’identifiant officiel du document.
+La deuxième ligne contient l’étiquette littérale «URL: » suivie de l’URL d’accès ou de vérification du document.
+Chaque ligne se termine par LF (U+000A). La chaîne complète se termine par le LF de la deuxième ligne.
+Restrictions sur «<valeur>» dans les deux champs, vérifiées avant toute autre transformation :
+Elle NE DOIT PAS contenir les caractères CR (U+000D) ni LF (U+000A) en quelque position que ce soit.
+Elle NE DOIT PAS comporter d’espaces (U+0020) ni de tabulations (U+0009) au début ou à la fin.
+Elle NE DOIT PAS être vide.
+Il n’existe aucun mécanisme d’échappement pour ces caractères en v1.1 ; un CSV ou une URL qui en aurait besoin ne peut pas être représenté par cet adaptateur.
+Exemple :
+CSV: ABC123XYZ
+URL: https://sede.administracion.gob.es/verifica/ABC123XYZ
+3.2 Normalisation de la chaîne de référence
+La chaîne de référence canonique, une fois construite selon 3.1, est soumise aux mêmes règles de normalisation de la Partie II que tout objet canonique documentaire (y compris la règle 2.4 — elle DOIT se terminer par exactement un LF).
+Partie IV — Calcul des hachages
+Le moteur calcule trois hachages, tous par SHA-256 sur une préimage encodée en UTF-8. Chaque hachage possède une préimage distincte : hash_doc_sha256 est calculé sur l’objet canonique documentaire ; hash_ptc_sha256, sur la représentation physique du bloc PTC à l’exclusion uniquement de la ligne du champ lui-même ; et hash_ethical_context_sha256, sur la concaténation logique définie au point 4.3.
+4.1 hash_doc_sha256
+SHA-256 de l’objet canonique encodé du document, sans le bloc PTC. En Mode Contenu, l’objet canonique est le texte normalisé selon la Partie II. En Mode Référence, l’objet canonique est la chaîne de référence définie dans la Partie III.
+4.2 hash_ptc_sha256
+Contenu du bloc pour le calcul
+Le bloc PTC qui est haché comprend la ligne «<PTC>», tous les champs au format «clé: valeur» dans l’ordre normatif défini par PTC-F, et la ligne «</PTC>». Seule la ligne contenant le champ hash_ptc_sha256 est exclue. L’ordre des champs est normatif : permuter deux champs produit un hachage différent.
+Le calcul suit ce processus en deux états :
+État de calcul : construire le bloc PTC complet en excluant la ligne «hash_ptc_sha256: …», en respectant l’ordre normatif des champs. Calculer SHA-256 sur les octets UTF-8 de ce bloc.
+État final : insérer la ligne «hash_ptc_sha256: <valeur calculée>» à sa position correcte. L’artefact canonique contient le bloc en état final.
+La préimage utilisée pour ce calcul se termine exactement au caractère «>» qui ferme «</PTC>» et n’inclut aucun caractère postérieur. Un artefact conforme NE DOIT PAS contenir de caractère après ce «>» — la présence de l’un quelconque constitue une infraction au périmètre défini au point 5.1, non une variation admissible du calcul.
+Il existe une dépendance asymétrique entre les trois hachages : hash_ptc_sha256 est calculé sur un bloc qui contient déjà les valeurs déclarées de hash_doc_sha256 et de hash_ethical_context_sha256, et protège donc leur intégrité. Ces deux hachages, à leur tour, ne dépendent pas de hash_ptc_sha256 : hash_doc_sha256 ne dépend que du document, et hash_ethical_context_sha256 ne dépend que des huit champs contextuels.
+4.3 hash_ethical_context_sha256
+SHA-256 de la chaîne formée par les huit champs contextuels séparés par «|», sans séparateur initial ni final. Le format exact est :
+version|level|operator|date_utc|ai_system|co_creation_mode|human_review|purpose
+La préimage utilise les valeurs logiques de ces champs, telles que les définit PTC-F — non nécessairement leur représentation physique dans le bloc PTC. Pour les champs scalaires, la valeur logique est le contenu situé après le délimiteur canonique « : ». Pour purpose, lorsqu’il est multiligne, la valeur logique est le résultat de l’application de la grammaire de continuation définie dans PTC-F (désindenter et joindre par LF les lignes de continuation), non les lignes physiques telles qu’elles apparaissent sérialisées.
+Le caractère U+007C («|») est interdit dans la valeur logique des huit champs qui composent cette préimage. Cette version ne définit aucun mécanisme d’échappement pour lui : sa présence dans l’une quelconque des huit valeurs constitue une non-conformité.
+Toute différence dans les valeurs logiques, aussi minime soit-elle, produit un hachage différent. hash_doc_sha256 et hash_ethical_context_sha256 sont indépendants l’un de l’autre. Tous deux DOIVENT être calculés et incorporés au bloc en état de calcul avant d’obtenir hash_ptc_sha256, car leurs valeurs déclarées font partie de la préimage de ce dernier.
+La présence de hash_ethical_context_sha256 dans le bloc PTC est obligatoire. Sa vérification est tout aussi obligatoire, sans exception : une divergence entre la valeur déclarée et la valeur recalculée constitue une non-conformité, exactement comme une divergence dans hash_doc_sha256 ou dans hash_ptc_sha256.
+Partie V — L’artefact canonique
+L’artefact canonique est le document qui contient l’objet canonique et le bloc PTC. Il est le résultat produit par le moteur et l’entrée consommée par le validateur.
+5.1 Structure
+L’artefact canonique TXT a la structure suivante, dans cet ordre :
+L’objet canonique normalisé selon la Partie II.
+Une ligne contenant exactement le texte «<PTC>», sans caractère supplémentaire.
+Les champs du bloc PTC, un par ligne, au format «clé: valeur», dans l’ordre normatif défini par PTC-F. Seuls les champs expressément autorisés par PTC-F PEUVENT occuper plusieurs lignes via des continuations — dans PTC-F v1.2, exclusivement purpose. Restriction : une valeur de champ NE DOIT PAS contenir la chaîne «</PTC>» comme unique contenu d’une ligne physique.
+Une ligne contenant exactement le texte «</PTC>», sans caractère supplémentaire.
+L’artefact canonique se termine immédiatement au caractère «>» qui ferme la ligne «</PTC>». Il NE DOIT PAS y avoir de caractère après ce «>» — pas même un seul LF. La dernière ligne physique de l’artefact se termine à la fin de l’artefact, non par un LF (voir définition de «ligne physique» dans le Glossaire).
+5.2 Extraction du bloc PTC
+Pour extraire le bloc PTC d’un artefact, le validateur DOIT suivre l’algorithme d’extraction ancrée depuis la fin. L’algorithme opère sur des lignes physiques, selon la définition du Glossaire :
+Chercher, de bas en haut, la dernière ligne physique dont le contenu est exactement «</PTC>». Si elle n’existe pas → non conforme : artefact sans PTC. S’il existe un caractère quelconque après ce «>» — y compris un LF — → non conforme : contenu hors périmètre.
+Chercher, depuis la ligne «</PTC>» vers le haut, la dernière ligne physique dont le contenu est exactement «<PTC>». Si elle n’existe pas → non conforme : bloc PTC malformé.
+Vérifier qu’entre les lignes «<PTC>» et «</PTC>» trouvées il n’existe aucune ligne physique dont le contenu soit exactement «</PTC>». Si elle existe → non conforme : délimiteur de fermeture ambigu dans le bloc PTC.
+Le bloc PTC est l’ensemble des lignes de «<PTC>» à «</PTC>», ces deux lignes incluses.
+L’objet canonique du document est l’intégralité du contenu antérieur à la ligne «<PTC>», y compris son LF final.
+L’algorithme n’applique pas de trim aux délimiteurs. Une ligne comportant des espaces autour de «<PTC>» ou «</PTC>» n’est pas un délimiteur valide.
+L’étape 1 recherche le dernier «</PTC>» de l’artefact. Toute apparition antérieure des chaînes littérales «<PTC>» ou «</PTC>» — par exemple, à l’intérieur d’un exemple illustratif d’un document qui explique le format lui-même — est traitée comme contenu documentaire ordinaire. Elle ne génère aucune condition particulière par elle-même : elle est protégée par hash_doc_sha256 exactement comme tout autre contenu du document. Si ce contenu est altéré après certification, l’altération est détectée par la divergence du hachage du document, non par une règle particulière sur les délimiteurs.
+Note d’implémentation : l’algorithme d’extraction peut être implémenté en flux continu, en traitant l’artefact ligne par ligne depuis la fin sans avoir à le charger entièrement en mémoire. Cette note est informative ; elle n’impose aucune stratégie d’implémentation concrète.
+Partie VI — Cas de conformité
+Les cas suivants permettent à une implémentation de vérifier que sa normalisation et son calcul de hachages produisent des résultats conformes à ce document. Ils sont présentés en langage naturel, ordonnés du plus simple au plus complexe ; ils ne constituent pas encore une suite exécutable avec des octets d’entrée exacts, une sortie canonique exacte et des hachages attendus sérialisés — une telle suite, si elle est construite, sera un document séparé.
+Les cas relatifs à la forme canonique du bloc PTC, au champ version et au format de date_utc appartiennent à PTC-F, non à ce document, car ils dépendent de règles dont le propriétaire normatif est PTC-F.
+Partie VII — Ce que ce document ne définit pas
+Ce document définit l’objet canonique, ses règles de normalisation, les préimages des trois hachages, ainsi que le périmètre et l’algorithme d’extraction de l’artefact TXT. Il ne définit pas :
+Les champs du bloc PTC, leur sémantique, leurs valeurs valides, leur grammaire de continuation ni leur ordre normatif. Cela appartient à PTC-F v1.2 (DOI : 10.5281/zenodo.21406680).
+Le champ version, ses valeurs admises, ni le traitement des artefacts historiques. Cela appartient à PTC-F v1.2.
+Les états globaux de validation (VALID, INVALID, VALID_WARNING) et la traduction d’une non-conformité détectée ici en l’un de ces états. Cela appartient à l’Architecture Normative du Protocole de Transparence Canaliste (PTC) v0.3 (DOI : 10.5281/zenodo.21406665). Ce document se limite à déclarer quand une préimage recalculée diverge de sa valeur déclarée ; quel état global cette divergence produit est une décision d’ARCH, définie une seule fois.
+Les adaptateurs d’entrée qui transforment des formats concrets en objet canonique. Cela appartient à l’Architecture Normative du Protocole de Transparence Canaliste (PTC) v0.3.
+L’interface utilisateur d’une implémentation quelconque.
+Le format de l’artefact de sortie dans des formats autres que TXT.
+La conversion depuis des encodages autres qu’Unicode. Cela est de la responsabilité de l’adaptateur d’entrée.
+Références normatives
+Spécification produite au sein de l’écosystème El Canal — ACS
+Manuel Barrera Anglada · ORCID: 0009-0000-8891-7021 · CC BY 4.0
+https://elcanal.es · https://validator.es
+Terme
+Définition
+Objet canonique
+La chaîne de caractères Unicode normalisée selon les règles de la Partie II. Elle constitue l’entrée au calcul des hachages.
+Objet canonique encodé
+La représentation en octets UTF-8 de l’objet canonique. Elle constitue l’entrée directe à la fonction SHA-256.
+Artefact canonique
+Le document complet qui contient l’objet canonique et le bloc PTC.
+Ligne physique
+Segment de caractères délimité par un caractère LF (U+000A) ou par la fin de l’artefact. La dernière ligne physique d’un artefact conforme — celle qui contient «</PTC>» — se termine à la fin de l’artefact, non par un LF : voir 5.1.
+Cas
+Entrée
+Résultat attendu
+C-N01
+Texte brut sans BOM, sauts LF, sans espaces finaux, un LF à la fin
+Sans transformation. Le texte est son propre objet canonique.
+C-N02
+Texte avec BOM (U+FEFF) en position 0
+BOM supprimée. Le reste du texte reste inchangé.
+C-N03
+U+FEFF en position autre que 0
+Le caractère est conservé. Il n’est pas supprimé.
+C-N04
+Texte avec sauts CRLF
+CRLF convertis en LF.
+C-N05
+Ligne avec espaces finaux : «texte␣␣␣»
+Espaces supprimés : «texte». LF de ligne conservé.
+C-N06
+Document sans LF à la fin
+Un LF ajouté à la fin.
+C-N07
+Document avec trois LF à la fin
+Réduits à un seul LF.
+C-N08
+Même texte normalisé sous Windows et sous Linux
+hash_doc_sha256 identique sur les deux systèmes.
+Cas combinés
+Cas combinés
+Cas combinés
+C-N09
+BOM + CRLF + espaces finaux + LF multiples
+BOM supprimée, CRLF→LF, espaces supprimés, un LF à la fin.
+C-N10
+«á» comme U+00E1 vs «á» comme U+0061+U+0301
+Hachages distincts. NFC n’est pas appliqué.
+C-N11
+Texte avec caractères Unicode non-ASCII : lettres accentuées, ñ, emojis
+Le texte est préservé. UTF-8 inclut les octets corrects.
+C-N12
+Artefact contenant la chaîne littérale «<PTC>» dans le corps du document, avant le bloc réel
+Conforme. Le bloc PTC est extrait depuis la fin ; la mention antérieure est protégée par hash_doc, sans générer de condition particulière.
+C-N13
+Séquence complète : normaliser le document ; calculer hash_doc_sha256 ; calculer hash_ethical_context_sha256 à partir des valeurs logiques ; construire le bloc PTC en état de calcul avec les deux hachages déclarés et sans la ligne hash_ptc_sha256 ; calculer hash_ptc_sha256 ; insérer sa ligne à la position normative
+L’exécution répétée avec les mêmes entrées produit exactement le même objet canonique, le même bloc PTC et les mêmes trois hachages.
+C-N14
+Artefact où un champ du bloc PTC contient «</PTC>» comme unique contenu d’une ligne physique
+Non conforme : délimiteur de fermeture ambigu dans le bloc PTC.
+C-N15
+Artefact avec un caractère — y compris un LF — après le «>» de «</PTC>»
+Non conforme : contenu hors périmètre.
+Document
+DOI
+Caractère
+PTC v0.0 — document fondateur du protocole
+10.5281/zenodo.17308564
+Obligatoire
+ACS-6 — standard auditable pour l’interaction humain–IA
+10.5281/zenodo.17749396
+Informatif
+PTC-F — Spécification Fonctionnelle du Protocole de Transparence Canaliste (PTC) v1.2
+10.5281/zenodo.21406680
+Obligatoire
+Architecture Normative du Protocole de Transparence Canaliste (PTC) v0.3
+10.5281/zenodo.21406665
+Obligatoire pour les implémenteurs
