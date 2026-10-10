@@ -1,0 +1,11 @@
+id: PTC-F
+version: v1.2
+doi: 10.5281/zenodo.21406680
+archival_authority: Zenodo
+license: CC-BY-4.0
+published: 2026-07-22
+representation_note: "The TXT files in this folder are readable text extractions for inspection and diffing. The canonical archived artefacts remain the Zenodo DOCX and PTC ZIP files."
+canonical_files:
+  ES: {name: "PTC-F_v1.2_ES.docx", md5: "4b80b059a13a734dcd0dd8faf15ccc77"}
+  EN: {name: "PTC-F_v1.2_EN.docx", md5: "59db720a7fc44add283ff4215dee7869"}
+  FR: {name: "PTC-F_v1.2_FR.docx", md5: "2632c9b2332ae578ae934827881788ec"}
