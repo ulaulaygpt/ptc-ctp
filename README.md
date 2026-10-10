@@ -4,6 +4,8 @@ Public technical repository for the normative corpus of the **PTC — Protocolo 
 
 This repository is intended for material whose nature is normative, technical, implementable or reproducible. **Zenodo remains the archival and citation authority for each published version.** GitHub provides a readable, versionable and auditable working surface.
 
+**Where this sits:** [CAP](https://github.com/ulaulaygpt/elcanal-cap) governs the working relationship; **PTC/CTP** governs transparent declaration and traceability; [Validator](https://github.com/ulaulaygpt/ptc-validator) implements this normative stack. See the [El Canal GitHub map](https://github.com/ulaulaygpt) for the whole architecture.
+
 ## Current normative corpus
 
 | Component | Current public version | Function | DOI |
@@ -17,7 +19,7 @@ This repository is intended for material whose nature is normative, technical, i
 
 ## Readable specification mirror
 
-The repository now includes a `specifications/` tree with readable text representations of the closed public versions of **R-01 v1.1**, **PTC-F v1.2** and **ARCH v0.3** in Spanish, English and French. Each version directory carries a `SOURCE.yml` manifest tying the representation to its Zenodo DOI and canonical file checksums.
+The repository now includes a `specifications/` tree with readable text representations of the closed public versions of **R-01 v1.1, PTC-F v1.2, ARCH v0.3, FRS-01 v0.3, PKG-02 v0.4 and DCL-03 v0.3** in Spanish, English and French. Each version directory carries a `SOURCE.yml` manifest tying the representation to its Zenodo DOI and canonical file checksums.
 
 These GitHub text representations are intended for inspection and diffing; **the Zenodo artefacts remain canonical**.
 
