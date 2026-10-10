@@ -1,0 +1,1440 @@
+EL CANAL · VALIDATOR · ESPECIFICACIÓN TÉCNICA
+
+PKG-02 v0.4
+
+Validator Package Format 2.0
+
+Transporte, preservación y reconstrucción de una estructura verificable
+
+Versión congelada técnicamente
+
+Título
+
+PKG-02 — Validator Package Format 2.0
+
+Versión
+
+v0.4 — congelada técnicamente
+
+Fecha
+
+3 de agosto de 2026
+
+Estado
+
+CONGELADA TÉCNICAMENTE; base autorizada para implementación
+
+Decisión y responsabilidad final
+
+Manuel Barrera Anglada
+
+Redacción y consolidación
+
+GPT-5.6 Thinking (OpenAI)
+
+Revisiones hostiles
+
+Claude Sonnet 5 (Anthropic) — v0.1 y v0.3 completadas
+
+Controles independientes
+
+DeepSeek — v0.2 y v0.3 completados y contrastados
+
+Base autorizada
+
+FRS-01 v0.3 congelada y Decisiones arquitectónicas v0.4 FINAL CERRADA
+
+Principio rector
+
+El paquete es un contenedor de transporte, preservación y reconstrucción. No constituye por sí mismo el objeto criptográfico protegido ni sustituye la autoridad del archivo fuente y del objeto canónico con PTC.
+
+Mapa del documento
+
+PKG-02 define qué piezas viajan juntas, cuál es la autoridad de cada una, cómo se localizan, cómo se comprueba su coherencia y qué debe hacer un verificador ante contradicciones o riesgos.
+
+Parte
+
+Contenido
+
+I
+
+Propósito, alcance, referencias y modelo de autoridad.
+
+II
+
+Estructura del ZIP, artefactos obligatorios y opcionales.
+
+III
+
+manifest.json: gramática, campos y encaminamiento.
+
+IV
+
+Generación, verificación, redundancia y reconstrucción.
+
+V
+
+Conformidad del paquete como eje separado.
+
+VI
+
+Seguridad, límites operativos y reproducibilidad.
+
+VII
+
+Compatibilidad, publicación y reempaquetado.
+
+VIII
+
+Vectores de interoperabilidad, contradicción y ataque.
+
+Anexo A
+
+Matriz de autoridad y respuesta a la objeción del hash único.
+
+Invariante heredado
+
+Un objeto canónico protegido, un único PTC y los tres hashes normativos. PKG-02 organiza y transporta esas piezas; no crea un cuarto hash ni un veredicto criptográfico global.
+
+PARTE I · Alcance y autoridad
+
+1. Propósito
+
+PKG-02 define un formato ZIP interoperable para transportar una fuente exacta, su referencia FRS-01, un PTC, copias derivadas, metadatos de encaminamiento e, opcionalmente, materiales de divulgación pública.
+
+La especificación pretende que un tercero pueda encontrar las piezas, verificar cada eje por separado, detectar contradicciones internas y reconstruir las copias derivadas sin confiar ciegamente en el manifiesto.
+
+2. Alcance
+
+Estructura mínima y extendida del paquete 2.0.
+
+Roles y jerarquía de autoridad de cada artefacto.
+
+Gramática y semántica de manifest.json.
+
+Relaciones exactas entre el registro integrado y las copias derivadas.
+
+Generación, verificación y reconstrucción.
+
+Conformidad estructural del paquete como eje independiente.
+
+Reglas de seguridad para rutas, entradas y recursos ZIP.
+
+Compatibilidad con paquetes anteriores y reempaquetado.
+
+Vectores de interoperabilidad, contradicción y tratamiento hostil.
+
+3. Fuera de alcance
+
+Redefinir R-01, PTC-F, ARCH o FRS-01.
+
+Definir el contenido normativo de disclosure-notice-v1.
+
+Convertir el hash del ZIP exterior en raíz criptográfica del sistema.
+
+Afirmar identidad del operador, prioridad temporal o validez jurídica.
+
+Interpretar el contenido interno de la fuente.
+
+Garantizar extracción ilimitada o procesamiento de archivos de cualquier tamaño en cualquier dispositivo.
+
+Fijar un servicio de alojamiento o una URL pública.
+
+4. Referencias
+
+Referencia
+
+Función
+
+R-01 v1.1
+
+Objeto canónico, hashes y extracción bottom-anchored del PTC.
+
+PTC-F v1.2
+
+Forma canónica y semántica del bloque PTC.
+
+ARCH v0.3
+
+Arquitectura general, adaptadores, paquetes y estados.
+
+FRS-01 v0.3
+
+Descriptor file-reference-sha256-v1 y verificación de la fuente exacta.
+
+Decisiones v0.4 cerradas
+
+Estructura prevista, aviso opcional y límites arquitectónicos.
+
+5. Vocabulario normativo
+
+DEBE y NO DEBE expresan requisitos de conformidad; DEBERÍA y NO DEBERÍA expresan recomendaciones que requieren justificación para apartarse; PUEDE expresa una opción permitida.
+
+6. Términos
+
+Término
+
+Definición
+
+Fuente
+
+Archivo exacto cuyos bytes quedan identificados mediante FRS-01.
+
+Registro integrado
+
+Objeto canónico seguido del bloque PTC en un único artefacto autosuficiente.
+
+Copia derivada
+
+Artefacto extraído del registro integrado para facilitar lectura o procesamiento.
+
+Manifiesto
+
+Mapa JSON que localiza y describe piezas; no es autoridad criptográfica.
+
+Paquete completo
+
+ZIP 2.0 con todas las entradas obligatorias y coherentes.
+
+Paquete recuperable
+
+ZIP no conforme pero con piezas suficientes para verificar o reconstruir el núcleo.
+
+Incidencia de paquete
+
+Defecto de estructura o coherencia que no debe colapsar los ejes PTC, fuente o divulgación.
+
+Reempaquetado
+
+Creación de otro ZIP con las mismas piezas relevantes, posiblemente con bytes exteriores distintos.
+
+7. Modelo de autoridad
+
+Nivel
+
+Artefacto
+
+Autoridad
+
+A
+
+Archivo en source_path
+
+Autoridad sobre sus propios bytes; se compara con FRS-01.
+
+A
+
+canonical/file_reference_with_ptc.txt
+
+Registro integrado principal y autosuficiente.
+
+B
+
+canonical/file_reference.txt
+
+Copia derivada exacta del cuerpo extraído del registro integrado.
+
+B
+
+ptc.txt
+
+Copia derivada exacta del bloque PTC extraído.
+
+C
+
+manifest.json
+
+Encamina y describe; nunca corrige ni sustituye A o B.
+
+D
+
+README.txt y presentaciones
+
+Explican o presentan; no crean autoridad criptográfica.
+
+Regla de prevalencia
+
+Si manifest.json contradice al registro integrado o a la fuente, el manifiesto está equivocado. Si una copia derivada contradice al registro integrado, la copia derivada está equivocada. La contradicción afecta a la conformidad del paquete, pero no reescribe el artefacto autoritativo.
+
+PARTE II · Estructura del paquete
+
+8. Perfil y clase definidos
+
+PKG-02 define paquetes completos para input_adapter igual a file-reference-sha256-v1. Un registro FRS separado sin fuente puede seguir siendo útil conforme a FRS-01, pero no constituye un paquete completo 2.0.
+
+9. Estructura mínima obligatoria
+
+manifest.json
+README.txt
+ptc.txt
+
+source/
+    <un único archivo fuente>
+
+canonical/
+    file_reference.txt
+    file_reference_with_ptc.txt
+
+Los directorios pueden existir como entradas explícitas o quedar implícitos por las rutas de archivo. La conformidad se decide por las entradas de archivo, no por la presencia de entradas ZIP de directorio.
+
+Un paquete 2.0 con estado VERDE NO DEBE contener entradas de archivo distintas de las obligatorias, de las declaradas mediante public_notice o de las definidas por una extensión normativa que el verificador reconozca expresamente.
+
+Una entrada adicional segura, no declarada y sin función normativa produce ÁMBAR en el eje del paquete y NO DEBE ignorarse silenciosamente.
+
+Una entrada adicional peligrosa, ambigua respecto de los roles reservados o contradictoria con un artefacto autoritativo produce ROJO en el eje del paquete.
+
+10. Estructura con divulgación opcional
+
+manifest.json
+README.txt
+ptc.txt
+
+source/
+    <un único archivo fuente>
+
+canonical/
+    file_reference.txt
+    file_reference_with_ptc.txt
+
+PUBLIC_NOTICE/
+    README.txt
+    notice.txt
+    notice.html
+    notice.svg
+    qr.svg                # solo si existe verification_url
+
+La carpeta PUBLIC_NOTICE/ solo aparece cuando el objeto canónico incorpora un bloque PTC DISCLOSURE. Su contenido normativo y sus estados se rigen por disclosure-notice-v1.
+
+11. Entradas obligatorias
+
+Entrada
+
+Obligación
+
+Función
+
+manifest.json
+
+DEBE
+
+Localización, versión, perfil y metadatos.
+
+README.txt
+
+DEBE
+
+Instrucciones humanas mínimas.
+
+ptc.txt
+
+DEBE
+
+Copia derivada del bloque PTC.
+
+source_path
+
+DEBE
+
+Única fuente exacta transportada.
+
+canonical/file_reference.txt
+
+DEBE
+
+Copia derivada del objeto canónico FRS-01.
+
+canonical/file_reference_with_ptc.txt
+
+DEBE
+
+Registro integrado autoritativo.
+
+12. Reglas de rutas
+
+Todas las rutas internas DEBEN usar / como separador.
+
+Los nombres de todas las entradas DEBEN poder decodificarse inequívocamente como UTF-8.
+
+Cuando un nombre contenga caracteres no ASCII, el indicador UTF-8 del formato ZIP (bit 11 del general purpose bit flag) DEBE estar activado. Un nombre no ASCII sin ese indicador produce ROJO en el eje del paquete.
+
+Las rutas normativas reservadas permanecen exclusivamente en ASCII.
+
+Las rutas DEBEN ser relativas y no pueden comenzar por /, \ ni una letra de unidad.
+
+No se permiten segmentos vacíos, . ni .. después de normalizar separadores.
+
+No se permiten NUL ni caracteres de control U+0000–U+001F o U+007F en nombres de entrada.
+
+Las rutas reservadas manifest.json, README.txt, ptc.txt y canonical/ son sensibles a mayúsculas y minúsculas y DEBEN aparecer exactamente así.
+
+No puede existir más de una entrada que produzca la misma ruta normalizada.
+
+No se permiten colisiones por cambio exclusivo de mayúsculas y minúsculas.
+
+No se permiten enlaces simbólicos, enlaces duros ni entradas que redirijan fuera del ZIP.
+
+13. Regla de la fuente única
+
+Un paquete 2.0 DEBE contener exactamente una entrada de archivo identificada por source_path. Esa entrada DEBE ser descendiente directa de source/ y no puede ser manifest.json, un artefacto canónico ni un material de presentación.
+
+La fuente PUEDE ser a su vez un ZIP. El ZIP interior es el objeto declarado; el ZIP exterior es solo el paquete de transporte.
+
+14. Nombre almacenado y nombre original
+
+El nombre de la entrada en source/ puede conservar un nombre seguro o usar uno saneado. original_filename conserva el nombre base declarado por el operador y no forma parte de la identidad criptográfica.
+
+original_filename NO DEBE contener separadores de ruta ni caracteres de control.
+
+Un cambio de nombre sin cambio de bytes no exige regenerar el PTC.
+
+Un cambio de source_path sí exige actualizar manifest.json, pero no modifica el descriptor ni sus hashes.
+
+PARTE III · manifest.json
+
+15. Forma física
+
+DEBE ser JSON válido codificado en UTF-8 sin BOM.
+
+DEBE contener un objeto JSON en la raíz.
+
+No se permiten comentarios, claves duplicadas ni valores NaN/Infinity.
+
+Las cadenas de ruta usan / y deben cumplir la sección 12.
+
+El orden de claves y la indentación no son normativos.
+
+Un generador DEBERÍA emitir LF y terminar el archivo en un único LF para reproducibilidad.
+
+16. Campos obligatorios
+
+Clave
+
+Tipo
+
+Valor o función
+
+package_format_version
+
+string
+
+Valor exacto "2.0".
+
+input_adapter
+
+string
+
+Valor exacto "file-reference-sha256-v1".
+
+source_path
+
+string
+
+Ruta de la única fuente.
+
+canonical_path
+
+string
+
+Ruta de la copia derivada del descriptor.
+
+canonical_with_ptc_path
+
+string
+
+Ruta del registro integrado.
+
+ptc_path
+
+string
+
+Ruta de la copia derivada del PTC.
+
+readme_path
+
+string
+
+Ruta del README principal.
+
+original_filename
+
+string
+
+Nombre base informativo de la fuente.
+
+media_type
+
+string
+
+MIME informativo; application/octet-stream si se desconoce.
+
+17. Valores de ruta obligatorios en v2.0
+
+Clave
+
+Valor exacto
+
+canonical_path
+
+canonical/file_reference.txt
+
+canonical_with_ptc_path
+
+canonical/file_reference_with_ptc.txt
+
+ptc_path
+
+ptc.txt
+
+readme_path
+
+README.txt
+
+source_path es variable porque conserva o sanea el nombre de la fuente. Los demás valores se congelan para que un paquete pueda recuperarse incluso cuando el manifiesto esté dañado.
+
+18. Ejemplo mínimo
+
+{
+  "package_format_version": "2.0",
+  "input_adapter": "file-reference-sha256-v1",
+  "source_path": "source/contenido_original.ext",
+  "canonical_path": "canonical/file_reference.txt",
+  "canonical_with_ptc_path": "canonical/file_reference_with_ptc.txt",
+  "ptc_path": "ptc.txt",
+  "readme_path": "README.txt",
+  "original_filename": "contenido_original.ext",
+  "media_type": "application/octet-stream"
+}
+
+19. Objeto public_notice
+
+Cuando exista divulgación, manifest.json DEBE incluir public_notice. La clave usa snake_case y no es el nombre literal de la carpeta PUBLIC_NOTICE/.
+
+{
+  "public_notice": {
+    "profile": "disclosure-notice-v1",
+    "readme_path": "PUBLIC_NOTICE/README.txt",
+    "notice_path": "PUBLIC_NOTICE/notice.txt",
+    "html_path": "PUBLIC_NOTICE/notice.html",
+    "svg_path": "PUBLIC_NOTICE/notice.svg",
+    "qr_path": "PUBLIC_NOTICE/qr.svg",
+    "verification_url": "https://ejemplo.org/declaracion"
+  }
+}
+
+public_notice DEBE omitirse por completo cuando no exista divulgación.
+
+profile DEBE ser disclosure-notice-v1.
+
+readme_path, notice_path, html_path y svg_path DEBEN estar presentes.
+
+qr_path y verification_url aparecen conjuntamente o se omiten conjuntamente.
+
+verification_url DEBE cumplir las reglas de disclosure-notice-v1; PKG-02 solo la transporta.
+
+La presencia de public_notice en manifest.json y la presencia de PUBLIC_NOTICE/ en el ZIP DEBEN ser coherentes. Su divergencia constituye una incidencia de paquete y NO DEBE alterar por sí sola los resultados independientes de la declaración PTC o de la fuente.
+
+20. Claves desconocidas
+
+Una clave desconocida no altera el PTC ni la fuente. Un verificador DEBE ignorarla para la verificación criptográfica, pero DEBERÍA mostrar una incidencia de paquete para evitar que un error tipográfico pase inadvertido.
+
+21. El manifiesto no es fuente de verdad
+
+El verificador usa manifest.json para encaminar el proceso y después confirma cada afirmación contra las piezas reales. input_adapter no convierte un texto arbitrario en FRS-01; source_path no cambia los bytes declarados; y original_filename o media_type no modifican la identidad.
+
+PARTE IV · Generación, verificación y reconstrucción
+
+22. Algoritmo de generación
+
+1. Cerrar la versión final del archivo fuente.
+
+2. Calcular tamaño y source_sha256 conforme a FRS-01.
+
+3. Generar file_reference.txt conforme a FRS-01.
+
+4. Generar el PTC conforme a R-01 y PTC-F.
+
+5. Construir file_reference_with_ptc.txt concatenando el objeto canónico y el bloque PTC según R-01.
+
+6. Extraer del registro integrado el cuerpo y el bloque PTC para producir las dos copias derivadas.
+
+7. Copiar la fuente sin modificación a source_path.
+
+8. Generar manifest.json con las rutas reales y los metadatos informativos.
+
+9. Generar README.txt.
+
+10. Si existe divulgación, generar los materiales y public_notice conforme a su especificación.
+
+11. Crear el ZIP sin cifrado y aplicar las reglas de seguridad y reproducibilidad.
+
+Fuente estable durante el proceso
+
+La implementación DEBE detectar, cuando el entorno lo permita, si la fuente cambia entre el cálculo de su huella y su incorporación al ZIP. Ante una divergencia, debe abortar y volver a comenzar.
+
+23. Algoritmo de verificación
+
+1. Inspeccionar el directorio central del ZIP antes de extraer y aplicar límites de seguridad.
+
+2. Normalizar y validar todas las rutas; rechazar entradas peligrosas o ambiguas.
+
+3. Localizar manifest.json y comprobar su forma.
+
+4. Localizar el registro integrado por su ruta fija y extraer el cuerpo y el PTC según R-01.
+
+5. Verificar el PTC y el objeto canónico conforme a R-01/PTC-F.
+
+6. Confirmar que el cuerpo satisface FRS-01 y que input_adapter es coherente.
+
+7. Comparar exactamente el cuerpo extraído con canonical/file_reference.txt.
+
+8. Comparar exactamente el bloque extraído con ptc.txt.
+
+9. Localizar source_path y verificar tamaño y source_sha256 conforme a FRS-01.
+
+10. Comprobar que todas las rutas declaradas existen y apuntan al tipo de artefacto esperado.
+
+11. Si existe public_notice, delegar su verificación a disclosure-notice-v1.
+
+12. Emitir resultados separados para PTC, fuente, paquete y divulgación.
+
+24. Igualdad de copias derivadas
+
+extract_body(canonical/file_reference_with_ptc.txt)
+    == bytes(canonical/file_reference.txt)
+
+extract_ptc(canonical/file_reference_with_ptc.txt)
+    == bytes(ptc.txt)
+
+La igualdad es byte a byte. Las copias derivadas no se normalizan de nuevo para ocultar divergencias físicas. El registro integrado ya contiene las formas canónicas aplicables.
+
+25. Reconstrucción
+
+Situación
+
+Acción permitida
+
+Falta file_reference.txt
+
+Reconstruirlo extrayendo el cuerpo del registro integrado; paquete no conforme pero recuperable.
+
+Falta ptc.txt
+
+Reconstruirlo extrayendo el bloque PTC; paquete no conforme pero recuperable.
+
+Falta README.txt
+
+No afecta a la criptografía; paquete no conforme pero recuperable.
+
+Falta manifest.json
+
+Usar rutas fijas para recuperar núcleo; source_path puede requerir intervención humana.
+
+Falta registro integrado
+
+No reconstruirlo silenciosamente como autoridad; usar piezas separadas solo como registro FRS separado.
+
+Falta la fuente
+
+PTC verificable; fuente no comprobada; no es paquete completo.
+
+26. Contradicciones internas
+
+Contradicción
+
+Autoridad que prevalece
+
+Efecto
+
+Manifest apunta a otra ruta canónica
+
+Ruta fija y registro integrado
+
+Paquete no conforme; manifest incorrecto.
+
+file_reference.txt difiere del cuerpo integrado
+
+Registro integrado
+
+Paquete ROJO; PTC se verifica contra el integrado.
+
+ptc.txt difiere del PTC integrado
+
+Registro integrado
+
+Paquete ROJO; copia derivada incorrecta.
+
+Fuente coincide con copia derivada pero no con cuerpo integrado
+
+Registro integrado
+
+Fuente ROJO para el objeto protegido.
+
+media_type contradice extensión o contenido
+
+Ninguno es identidad
+
+Incidencia informativa de paquete.
+
+Dos manifest.json
+
+Ninguno
+
+Paquete inseguro/no procesable.
+
+PARTE V · Conformidad del paquete como eje separado
+
+27. Prohibición de un veredicto global colapsado
+
+Los resultados DEBEN mostrarse en bloques independientes. La conformidad del paquete NO DEBE sobrescribir el estado del PTC, de la fuente o de la divulgación y NO DEBE combinarse mediante una regla del tipo «prevalece el peor».
+
+Declaración PTC:       VERDE / ROJO
+Archivo fuente:        VERDE / ÁMBAR / ROJO
+Estructura del paquete: VERDE / ÁMBAR / ROJO
+Divulgación pública:   VERDE / ÁMBAR / ROJO   # cuando exista
+
+28. Estados del eje paquete
+
+Estado
+
+Condición
+
+Mensaje mínimo
+
+VERDE
+
+Entradas obligatorias presentes, rutas seguras, manifiesto conforme y copias coherentes.
+
+El paquete 2.0 es estructuralmente conforme.
+
+ÁMBAR
+
+Defecto recuperable: falta una copia derivada, README o manifiesto; el núcleo puede localizarse o reconstruirse.
+
+El paquete tiene incidencias, pero conserva elementos verificables.
+
+ÁMBAR
+
+El dispositivo rechaza por límites locales un paquete que no presenta por sí mismo una infracción estructural.
+
+No se pudo procesar completamente en este dispositivo.
+
+ROJO
+
+Contradicción entre registro integrado y copias derivadas.
+
+El paquete contiene representaciones incompatibles.
+
+ROJO
+
+Rutas peligrosas, duplicadas, ambiguas, cifrado o múltiples manifiestos.
+
+El paquete no puede procesarse con seguridad.
+
+ROJO
+
+Falta el registro integrado autoritativo.
+
+No es un paquete 2.0 completo; puede existir un registro separado.
+
+ÁMBAR
+
+Existe una entrada adicional segura, no declarada y sin función normativa.
+
+El paquete contiene material adicional no reconocido; los demás ejes se mantienen separados.
+
+ROJO
+
+Existe una entrada adicional peligrosa, ambigua respecto de roles reservados o contradictoria.
+
+El paquete contiene material que impide una interpretación estructural segura.
+
+ROJO
+
+Un nombre no ASCII no está marcado inequívocamente como UTF-8.
+
+La ruta no puede interpretarse de forma interoperable.
+
+Ejemplo de asimetría
+
+Un paquete puede ser ROJO porque ptc.txt contradice al registro integrado, mientras la declaración PTC extraída del registro integrado sigue siendo VERDE. El usuario debe ver ambas cosas, no una sola luz roja.
+
+29. Conformidad y recuperabilidad
+
+VERDE significa conformidad completa. ÁMBAR significa que el ZIP no cumple todos los requisitos, pero conserva suficiente estructura para una verificación parcial o reconstrucción explícita. ROJO significa contradicción grave, ausencia del artefacto autoritativo o riesgo de procesamiento.
+
+PARTE VI · Seguridad y reproducibilidad
+
+30. Inspección antes de extracción
+
+El verificador DEBE leer metadatos ZIP antes de escribir archivos en disco.
+
+DEBE rechazar rutas absolutas, traversal, enlaces y duplicados normalizados.
+
+DEBE impedir que una entrada sobrescriba otra o un archivo local existente fuera del área temporal.
+
+NO DEBE ejecutar, previsualizar activamente ni descomprimir la fuente interna por el mero hecho de verificar el paquete.
+
+DEBE tratar la fuente como bytes opacos, incluso cuando sea otro ZIP.
+
+31. Cifrado, firmas y extensiones ZIP
+
+El paquete 2.0 NO DEBE estar cifrado ni protegido por contraseña.
+
+NO DEBE depender de volúmenes múltiples.
+
+PUEDE usar ZIP64 cuando el tamaño lo requiera y la implementación lo soporte.
+
+Los campos extra ZIP y marcas de tiempo no forman parte de la autoridad criptográfica.
+
+Una firma externa del ZIP puede coexistir, pero queda fuera de PKG-02.
+
+32. Límites de recursos
+
+Cada implementación DEBE aplicar límites configurables de número de entradas, tamaño total no comprimido, tamaño por entrada, relación de compresión, tiempo y memoria. Superar un límite local no demuestra por sí mismo que el paquete sea malicioso.
+
+Caso
+
+Resultado
+
+Límite local superado sin rasgo estructural prohibido
+
+ÁMBAR — no procesable completamente en este dispositivo.
+
+Tamaños ZIP imposibles o metadatos incoherentes
+
+ROJO — paquete malformado o inseguro.
+
+Relación de compresión extrema
+
+Abortar antes de extracción; clasificar según política y evidencia disponible.
+
+Fuente muy grande pero almacenada sin compresión
+
+Puede verificarse mediante lectura incremental si la implementación lo soporta.
+
+33. Reproducibilidad del ZIP
+
+El hash del ZIP exterior no es normativo. No obstante, un generador DEBERÍA favorecer paquetes reproducibles:
+
+El hash exterior del ZIP NO DEBE utilizarse como veredicto de conformidad del paquete ni como sustituto de source_sha256 o de los hashes internos del PTC.
+
+orden estable de entradas;
+
+rutas y codificación UTF-8 estables;
+
+marcas de tiempo controladas o documentadas;
+
+política de compresión estable;
+
+ausencia de datos extra dependientes del dispositivo cuando no sean necesarios.
+
+Dos ZIP distintos pueden ser paquetes equivalentes si contienen las mismas piezas autoritativas y derivadas coherentes.
+
+34. Cambio de la fuente durante el empaquetado
+
+Cuando sea posible, el generador DEBERÍA obtener la fuente desde una instantánea estable o comprobar tamaño, identificador de archivo y fecha antes y después de leerla. Si detecta un cambio, NO DEBE emitir el paquete.
+
+PARTE VII · Compatibilidad, publicación y reempaquetado
+
+35. Paquetes anteriores
+
+Un Validator nuevo DEBE continuar generando y verificando paquetes anteriores sin exigir package_format_version 2.0. La ausencia de este campo activa el flujo heredado; no se interpreta como paquete 2.0 defectuoso.
+
+36. Paquetes 2.0 en validadores antiguos
+
+Un validador antiguo puede no reconocer manifest.json, FRS-01 o PUBLIC_NOTICE/. No existe garantía de compatibilidad funcional hacia atrás. Las piezas TXT permanecen legibles y preservables.
+
+37. Reempaquetado
+
+Extraer y volver a crear el ZIP no invalida automáticamente la declaración, la fuente ni el aviso. El nuevo contenedor debe volver a evaluarse como paquete; sus ejes internos se verifican de forma independiente.
+
+38. Hash externo del ZIP
+
+Un repositorio PUEDE publicar SHA-256, MD5 u otra suma del ZIP como control de descarga. Ese valor responde a la identidad del contenedor y no sustituye source_sha256 ni los hashes del PTC.
+
+39. Publicación y URL
+
+PKG-02 no aloja el paquete ni genera una URL pública. Cuando exista verification_url, esta puede estar ya activa o ser una dirección persistente reservada que empezará a resolver tras publicar. Su disponibilidad es informativa y no altera los hashes.
+
+PARTE VIII · Vectores de interoperabilidad
+
+40. Vector PKG-V01 — paquete mínimo con fuente ABC
+
+PKG-V01 es un fixture físico ejecutable. Todos sus archivos, preimágenes, bytes y huellas se publican a continuación y se distribuyen además en el ZIP compañero PKG-V01_Validator_Package_Format_2.0_vector.zip.
+
+Alcance del vector
+
+Las seis huellas de entrada son reproducibles y verificables. Las huellas de manifest.json y README.txt fijan únicamente los bytes de este fixture: no convierten sus textos en plantillas universales ni en autoridad criptográfica.
+
+40.1 Fuente y descriptor exactos
+
+La fuente contiene exactamente los bytes hexadecimales 41 42 43, equivalentes a ASCII ABC.
+
+PTC FILE REFERENCE
+profile: file-reference-sha256-v1
+size_bytes: 3
+source_sha256: b5d4045c3f466fa91fe2cc6abe79232a1a57cdf104f7a26e716e0a1e2789df78
+
+file_reference.txt termina en exactamente un LF. Su tamaño es 147 bytes y su SHA-256 es 9002d57a5b85179359b3cd77b3845ac7b7ffaa0f21b9b21bb0490e377e721540.
+
+40.2 Valores declarativos exactos del PTC
+
+Campo
+
+Valor lógico exacto
+
+version
+
+R-01
+
+level
+
+standard
+
+operator
+
+Manuel Barrera Anglada
+
+date_utc
+
+2026-08-03T00:00:00Z
+
+ai_system
+
+GPT-5.6 Thinking (OpenAI)
+
+co_creation_mode
+
+human-ai dialogue and deterministic fixture generation
+
+human_review
+
+full
+
+purpose
+
+Executable conformance vector PKG-V01 for PKG-02 package format 2.0.
+
+hash_scope
+
+document_without_ptc_normalized
+
+orcid
+
+0009-0000-8891-7021
+
+La preimagen ética exacta se forma uniendo los ocho primeros valores contextuales con U+007C. hash_ethical_context_sha256 = da890ee5fa5b5d9b93b16626be9da95e837f9d00c56187c8953a8bf0dea75b29.
+
+40.3 ptc.txt exacto
+
+<PTC>
+version: R-01
+level: standard
+operator: Manuel Barrera Anglada
+date_utc: 2026-08-03T00:00:00Z
+ai_system: GPT-5.6 Thinking (OpenAI)
+co_creation_mode: human-ai dialogue and deterministic fixture generation
+human_review: full
+purpose: Executable conformance vector PKG-V01 for PKG-02 package format 2.0.
+hash_scope: document_without_ptc_normalized
+hash_doc_sha256: 9002d57a5b85179359b3cd77b3845ac7b7ffaa0f21b9b21bb0490e377e721540
+hash_ptc_sha256: aa7801011631dd5aac902544f0d103480d6e7b6c837a52cb993019af11d4f1f4
+hash_ethical_context_sha256: da890ee5fa5b5d9b93b16626be9da95e837f9d00c56187c8953a8bf0dea75b29
+orcid: 0009-0000-8891-7021
+</PTC>
+
+Para calcular hash_ptc_sha256 se usa este mismo bloque sin la línea hash_ptc_sha256, terminado en el carácter > de </PTC> y sin LF final. El resultado es aa7801011631dd5aac902544f0d103480d6e7b6c837a52cb993019af11d4f1f4.
+
+40.4 Registro integrado
+
+canonical/file_reference_with_ptc.txt se obtiene concatenando, sin separador adicional, los 147 bytes de file_reference.txt y los bytes de ptc.txt. El LF final del descriptor es el separador físico inmediatamente anterior a <PTC>.
+
+40.5 manifest.json exacto
+
+{
+  "package_format_version": "2.0",
+  "input_adapter": "file-reference-sha256-v1",
+  "source_path": "source/ABC.bin",
+  "canonical_path": "canonical/file_reference.txt",
+  "canonical_with_ptc_path": "canonical/file_reference_with_ptc.txt",
+  "ptc_path": "ptc.txt",
+  "readme_path": "README.txt",
+  "original_filename": "ABC.bin",
+  "media_type": "application/octet-stream"
+}
+
+El archivo manifest.json termina en exactamente un LF. La ausencia de ese LF produce 375 bytes; el fixture publicado contiene 376 bytes.
+
+40.6 README.txt exacto
+
+PKG-V01 - Validator Package Format 2.0 conformance vector
+
+This package is an executable fixture for PKG-02.
+Verify the integrated record first, then compare the derived copies and source/ABC.bin.
+The outer ZIP hash is informative and is not a normative root of trust.
+
+README.txt termina en exactamente un LF.
+
+40.7 Huellas reproducibles de las entradas
+
+Entrada
+
+Bytes
+
+SHA-256
+
+Función
+
+source/ABC.bin
+
+3
+
+b5d4045c3f466fa91fe2cc6abe79232a1a57cdf104f7a26e716e0a1e2789df78
+
+Fuente autoritativa
+
+canonical/file_reference.txt
+
+147
+
+9002d57a5b85179359b3cd77b3845ac7b7ffaa0f21b9b21bb0490e377e721540
+
+Objeto canónico derivado
+
+ptc.txt
+
+642
+
+223f34140a2693b32f0195a52ae7b62d3bb72773767fec533b59697c98b493aa
+
+Copia derivada ejecutable
+
+canonical/file_reference_with_ptc.txt
+
+789
+
+68af623e45401576bf31bdf6d4f1a68c94d222064a79bddc9f3e12c5017b3410
+
+Registro integrado autoritativo
+
+Archivo auxiliar
+
+Bytes
+
+SHA-256
+
+Alcance
+
+manifest.json
+
+376
+
+1a867888776bfabf479fa91e86cd53f9007c1ea24e9085fe97826ebcbef28ef4
+
+Fixture ejecutable; no plantilla universal
+
+README.txt
+
+269
+
+41ce0ca8ad7a893ead9090a6ccff4fe5a9f9d5d06a7a804168b3d0307a11c164
+
+Fixture ejecutable; no plantilla universal
+
+40.8 ZIP físico y receta reproducible
+
+Propiedad
+
+Valor exacto del fixture
+
+Nombre
+
+PKG-V01_Validator_Package_Format_2.0_vector.zip
+
+Entradas y orden
+
+manifest.json; README.txt; ptc.txt; source/ABC.bin; canonical/file_reference.txt; canonical/file_reference_with_ptc.txt
+
+Compresión
+
+ZIP_STORED, sin compresión
+
+Fecha de cada entrada
+
+1980-01-01T00:00:00, valor mínimo ZIP
+
+Modo
+
+archivo regular 0644; create_system = 3
+
+Campos extra y comentario
+
+vacíos
+
+Tamaño exterior
+
+2922 bytes
+
+SHA-256 exterior
+
+ec50789755f55fe798ae412136a9adede87b77e3cd72fe7f6e94893cf0ac8cef
+
+El hash exterior sigue siendo informativo
+
+La receta permite reproducir exactamente el ZIP físico del fixture y comprobar su distribución. Ese hash no se convierte por ello en raíz normativa: un reempaquetado distinto puede conservar íntegros el PTC, la fuente y las relaciones internas.
+
+41. Vector PKG-V02 — reempaquetado equivalente
+
+Crear dos ZIP con las seis entradas de PKG-V01, pero con distinto orden, compresión o marcas de tiempo. Resultado esperado: los hashes exteriores pueden diferir; PTC, fuente y coherencia interna permanecen VERDE; el paquete es VERDE si ambos cumplen las reglas estructurales.
+
+42. Vectores de recuperación
+
+ID
+
+Mutación
+
+Paquete
+
+Otros ejes
+
+REC-01
+
+Eliminar README.txt
+
+ÁMBAR
+
+PTC y fuente pueden seguir VERDE.
+
+REC-02
+
+Eliminar file_reference.txt
+
+ÁMBAR
+
+Se reconstruye desde el integrado.
+
+REC-03
+
+Eliminar ptc.txt
+
+ÁMBAR
+
+Se reconstruye desde el integrado.
+
+REC-04
+
+Eliminar manifest.json
+
+ÁMBAR
+
+Núcleo por rutas fijas; fuente puede requerir selección.
+
+REC-05
+
+Eliminar la fuente
+
+ÁMBAR
+
+PTC VERDE; fuente ÁMBAR.
+
+REC-06
+
+Eliminar registro integrado
+
+ROJO
+
+Piezas separadas pueden tratarse como registro FRS, no paquete completo.
+
+43. Vectores de contradicción y entradas adicionales
+
+ID
+
+Mutación
+
+Resultado esperado
+
+CON-01
+
+Alterar un byte de file_reference.txt, integrado intacto
+
+Paquete ROJO; PTC y fuente se verifican contra integrado.
+
+CON-02
+
+Alterar ptc.txt, integrado intacto
+
+Paquete ROJO; PTC integrado conserva su propio resultado.
+
+CON-03
+
+Manifest apunta a canonical/otro.txt
+
+Paquete ROJO o ÁMBAR recuperable según localización fija; manifest no prevalece.
+
+CON-04
+
+source_path apunta al registro integrado
+
+Paquete ROJO; rol de fuente inválido.
+
+CON-05
+
+Dos fuentes bajo source/, solo una declarada
+
+Paquete ROJO por ambigüedad y contenido no permitido.
+
+CON-06
+
+media_type erróneo
+
+Incidencia; no cambia fuente ni PTC.
+
+ADD-01
+
+Añadir notes.txt seguro, no declarado y sin función normativa
+
+Paquete ÁMBAR; PTC, fuente y divulgación no cambian por sí solos.
+
+ADD-02
+
+Añadir canonical/alternate.txt no declarado
+
+Paquete ROJO por ambigüedad de rol; no tratarlo como autoridad.
+
+44. Vectores hostiles
+
+ID
+
+Entrada o condición
+
+Resultado esperado
+
+SEC-01
+
+../manifest.json
+
+ROJO; no extraer.
+
+SEC-02
+
+/absolute/source.bin
+
+ROJO; no extraer.
+
+SEC-03
+
+C:\source\file.bin
+
+ROJO; no extraer.
+
+SEC-04
+
+manifest.json duplicado
+
+ROJO; no elegir uno arbitrariamente.
+
+SEC-05
+
+canonical/File_Reference.txt además de la ruta correcta
+
+ROJO por colisión potencial entre sistemas.
+
+SEC-06
+
+Entrada simbólica que apunta fuera
+
+ROJO; no seguir enlace.
+
+SEC-07
+
+ZIP cifrado
+
+ROJO; perfil no conforme.
+
+SEC-08
+
+Relación de compresión extrema
+
+Abortar antes de extracción; aplicar límites y diagnóstico.
+
+SEC-09
+
+Fuente interna proyecto.zip
+
+Permitido; no abrirla para verificar el paquete.
+
+SEC-10
+
+source/café.bin con bytes no ASCII y sin indicador UTF-8
+
+ROJO; la ruta no es interoperable.
+
+SEC-11
+
+source/café.bin codificado en UTF-8 con el indicador activado
+
+Permitido si cumple todas las demás reglas.
+
+45. Pruebas mínimas de interoperabilidad
+
+Dos generadores producen la misma estructura lógica y las mismas piezas autoritativas para PKG-V01.
+
+Dos verificadores emiten los mismos cuatro ejes ante todos los vectores.
+
+Las copias derivadas se comparan byte a byte, no por igualdad normalizada.
+
+Un manifiesto incorrecto nunca corrige el registro integrado.
+
+Un reempaquetado seguro no invalida las piezas internas.
+
+Las rutas hostiles se rechazan antes de escribir en disco.
+
+Las entradas adicionales seguras producen ÁMBAR y nunca se ignoran silenciosamente.
+
+Los nombres no ASCII sin señalización UTF-8 inequívoca producen el mismo resultado en todos los verificadores.
+
+Los paquetes heredados siguen su flujo anterior y no se fuerzan a 2.0.
+
+46. Preguntas cerradas para revisión hostil
+
+1. ¿Es correcta la elección del registro integrado como artefacto autoritativo frente a las copias derivadas?
+
+2. ¿Debe la ausencia del registro integrado ser siempre ROJO de paquete, aunque descriptor y PTC separados permitan reconstruirlo?
+
+3. ¿La obligación de una sola entrada bajo source/ es demasiado estricta o necesaria para impedir ambigüedad?
+
+4. ¿Las rutas canónicas deben permanecer fijas o todo debería resolverse exclusivamente por manifest.json?
+
+5. ¿El tratamiento de claves JSON desconocidas como incidencia y no como fallo es suficientemente seguro?
+
+6. ¿La igualdad byte a byte de las copias derivadas está bien delimitada por R-01/PTC-F?
+
+7. ¿Falta distinguir con mayor precisión paquete malicioso, paquete malformado y paquete no procesable por límites locales?
+
+8. ¿Debe fijarse una política ZIP reproducible exacta en 2.0 o mantenerse como DEBERÍA?
+
+9. ¿La receta reproducible y el ZIP físico de PKG-V01 permiten comprobar el fixture completo sin convertir el hash exterior en una obligación normativa para todos los paquetes?
+
+10. ¿La remisión a disclosure-notice-v1 evita invadir su ámbito sin dejar huecos de localización?
+
+ANEXO A · La caja no es la prueba
+
+Este anexo es informativo. Resume la diferencia entre integridad del contenedor, autoridad de las piezas y conformidad del paquete.
+
+A.1 Cuatro preguntas distintas
+
+Capa
+
+Pregunta
+
+Hash externo del ZIP
+
+¿Es exactamente el mismo contenedor de distribución?
+
+PKG-02
+
+¿La caja contiene las piezas esperadas, seguras y coherentes?
+
+FRS-01
+
+¿La fuente aportada coincide exactamente con la vinculada?
+
+R-01/PTC-F
+
+¿El objeto canónico y la declaración permanecen íntegros?
+
+A.2 Por qué no basta un hash del ZIP
+
+Un solo hash del ZIP detecta cualquier cambio exterior, pero no distingue si cambió la fuente, el PTC, un README, una marca de tiempo o el método de compresión. Tampoco sobrevive a extraer y volver a empaquetar las mismas piezas.
+
+A.3 Por qué la redundancia no es un error
+
+El registro integrado es autosuficiente. Las copias separadas facilitan lectura, importación, preservación y diagnóstico. Su redundancia aporta utilidad siempre que la especificación diga cuál es autoritativa y cómo detectar una divergencia.
+
+A.4 Síntesis
+
+Diferencia esencial
+
+PKG-02 no convierte el ZIP en una prueba monolítica. Define una caja gobernada que conserva una estructura probatoria capaz de sobrevivir al reempaquetado y de explicar exactamente qué pieza coincide, cuál falta y cuál contradice a la autoridad.
+
+47. Resolución de la revisión hostil v0.1
+
+Claude Sonnet 5 confirmó la arquitectura de autoridad y de cuatro ejes, pero detectó que PKG-V01 no era aún un vector ejecutable: faltaban los valores declarativos y la serialización exacta del PTC, y no se distribuía el ZIP físico.
+
+Se publican los valores lógicos exactos de todos los campos que determinan el PTC.
+
+Se publica ptc.txt completo y la regla exacta de cálculo de hash_ptc_sha256.
+
+Se publican el descriptor, manifest.json y README.txt con su terminación física.
+
+Se separan visualmente las piezas del núcleo y los archivos auxiliares específicos del fixture.
+
+Se distribuye el ZIP físico PKG-V01 con receta determinista y hash exterior informativo.
+
+La ausencia del registro integrado permanece como ROJO de paquete.
+
+No se pretende inferir intención maliciosa a partir de un síntoma técnico aislado.
+
+48. Resolución del control independiente sobre v0.2
+
+DeepSeek revisó PKG-02 v0.2 en contexto en blanco. Claude Sonnet 5 contrastó sus cinco observaciones contra el texto real y determinó que dos justificaban cambios, dos ya estaban resueltas y una era incorrecta.
+
+Se incorpora una regla expresa de coherencia entre public_notice y PUBLIC_NOTICE/.
+
+Se refuerza que el hash exterior del ZIP no es un veredicto de conformidad ni sustituye los hashes internos.
+
+No se repite la aclaración sobre una fuente que sea a su vez un ZIP, porque ya figura literalmente en §13.
+
+No se añade otra remisión general a disclosure-notice-v1, porque PKG-02 ya declara que solo la transporta.
+
+No se modifica el carácter informativo de media_type, ya establecido en §21.
+
+PKG-V01 y todas sus preimágenes, tamaños y huellas permanecen sin alteración.
+
+49. Cierre de interoperabilidad sobre v0.3
+
+DeepSeek recomendó congelar PKG-02 v0.3 y señaló dos detalles que consideró no bloqueantes. GPT-5.6 Thinking evaluó que ambos afectaban a la posibilidad de que dos implementaciones emitieran resultados distintos, y Manuel Barrera Anglada autorizó su cierre normativo en v0.4.
+
+Se define el tratamiento de las entradas adicionales no declaradas: ÁMBAR cuando son seguras y no normativas; ROJO cuando son peligrosas, ambiguas o contradictorias.
+
+Se exige interpretación inequívoca de los nombres de entrada como UTF-8 y la activación del indicador UTF-8 para nombres no ASCII.
+
+Se añaden estados y vectores de conformidad para ambas reglas.
+
+No se modifica el modelo de autoridad, la arquitectura de cuatro ejes ni el vector físico PKG-V01; con estas incorporaciones no queda ninguna cuestión normativa pendiente para la implementación del formato 2.0.
+
+50. Criterio de congelación
+
+Criterio cumplido
+
+PKG-02 v0.4 queda congelado técnicamente. La especificación contiene autoridad, estructura, gramática, seguridad, recuperación, estados y vectores suficientes para que dos implementaciones independientes generen, localicen, verifiquen, reconstruyan y diagnostiquen paquetes sin interpretar la intención del redactor ni colapsar los cuatro ejes de resultado. Cualquier cambio normativo posterior requerirá una nueva versión.
+
+51. Trazabilidad
+
+Función
+
+Responsable
+
+Decisión y responsabilidad final
+
+Manuel Barrera Anglada
+
+Redacción y consolidación v0.4
+
+GPT-5.6 Thinking (OpenAI)
+
+Revisiones hostiles
+
+Claude Sonnet 5 (Anthropic) — v0.1 y v0.3 completadas
+
+Controles independientes
+
+DeepSeek — v0.2 y v0.3, hallazgos contrastados
+
+Estado
+
+CONGELADA TÉCNICAMENTE
+
+Registro no normativo asociado
+
+2026-08-03_Registro_de_proceso_PKG-02_v0.2.docx

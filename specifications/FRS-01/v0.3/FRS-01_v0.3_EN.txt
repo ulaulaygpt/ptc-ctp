@@ -1,0 +1,869 @@
+EL CANAL · VALIDATOR · TECHNICAL SPECIFICATION
+
+FRS-01 v0.3
+
+Profile file-reference-sha256-v1
+
+Binding a PTC declaration to the exact bytes of any file
+
+Technically frozen version
+
+Title
+
+FRS-01 — Technical Specification of the file-reference-sha256-v1 Profile
+
+Version
+
+v0.3 — technically frozen
+
+Date
+
+2 August 2026
+
+Status
+
+TECHNICALLY FROZEN; authorised basis for implementation
+
+Final decision and responsibility
+
+Manuel Barrera Anglada
+
+Drafting and consolidation
+
+GPT-5.6 Thinking (OpenAI)
+
+Review and checks
+
+Claude Sonnet 5 (Anthropic) and DeepSeek — incorporated with cross-verification
+
+Authorised basis
+
+Architectural decisions and technical profiles v0.4 FINAL CLOSED
+
+Document status
+
+This text separates and develops only the exact-file reference profile. It does not modify R-01, PTC-F, or ARCH; it does not yet define disclosure-notice-v1; and by itself it does not authorise code changes. Its purpose is to enable an independent implementer to generate and verify the descriptor without interpreting the drafter's intent.
+
+Document map
+
+FRS-01 answers a single question: how to bind a PTC to an exact file without converting it, interpreting it, or extending the PTC block.
+
+Part
+
+Content
+
+I
+
+Scope, references, terms, and conformance model.
+
+II
+
+Binary identity, grammar, and descriptor construction.
+
+III
+
+Integration with R-01/PTC-F, generation, and verification.
+
+IV
+
+States, security, privacy, compatibility, and limits.
+
+V
+
+Conformance vectors and hostile-review questions.
+
+Annex A
+
+Why a hash of the distribution ZIP does not replace this architecture.
+
+Architectural invariant
+
+One protected canonical object, one PTC, and the three normative PTC hashes. source_sha256 is not a fourth cryptographic PTC field: it is verifiable data contained within the descriptor and transitively protected by hash_doc_sha256.
+
+PART I · Scope and conformance
+
+1. Purpose
+
+FRS-01 defines a deterministic textual representation of a finite byte sequence. The representation allows the existing PTC engine to be applied to ZIP, PDF, images, audio, video, spreadsheets, presentations, databases, executables, or any other format that Validator does not need to interpret.
+
+The profile protects the exact binary identity of the file. It does not protect visual, semantic, or functional equivalence between different files.
+
+2. Scope
+
+Calculation of SHA-256 over the complete source bytes.
+
+Exact serialisation of the PTC FILE REFERENCE descriptor.
+
+Construction of the canonical object in accordance with R-01.
+
+Integration with a PTC conformant to PTC-F without adding fields.
+
+Recalculation of size and fingerprint during verification.
+
+Minimum states for match, absence, inability to process, and divergence.
+
+3. Out of scope
+
+Interpreting or extracting the internal content of the file.
+
+Locating which byte, page, paragraph, or element changed.
+
+Demonstrating that the operator's declaration is materially true.
+
+Establishing identity, temporal priority, electronic signature, or legal validity.
+
+Defining the public notice disclosure-notice-v1.
+
+Defining the complete grammar of ZIP package 2.0 beyond the minimum integration contract.
+
+Guaranteeing in-browser processing of files of unlimited size.
+
+Replacing C2PA, SynthID, robust provider marks, or timestamps.
+
+4. Normative references
+
+Reference
+
+Function in FRS-01
+
+R-01 v1.1
+
+Normalisation of the textual object, documentary preimage, and calculation of hash_doc_sha256.
+
+PTC-F v1.2
+
+Fields, serialisation, hashes, and PTC conformance rules.
+
+ARCH v0.3
+
+Current adapter, package, state, and governance architecture.
+
+Closed v0.4 decisions
+
+Authorised architectural basis for this technical draft.
+
+5. Normative vocabulary
+
+The words MUST, MUST NOT, SHOULD, SHOULD NOT, and MAY express requirements of this specification. Version v0.3 incorporates the hostile review and the independent blank-context check and is technically frozen as the authorised basis for implementation.
+
+6. Terms
+
+Term
+
+Definition
+
+Source
+
+Finite byte sequence whose exact identity is to be bound.
+
+Descriptor
+
+Text conformant to file-reference-sha256-v1 containing the source size and SHA-256.
+
+Canonical object
+
+Result of applying R-01 to the documentary body without the PTC block.
+
+Attached source
+
+Original file available during verification.
+
+Separate record
+
+Descriptor and PTC available without the source file.
+
+Binary identity
+
+Exact byte-for-byte match, expressed by size and SHA-256.
+
+Complete package
+
+Distribution preserving source, descriptor, PTC, and manifest in accordance with the applicable format.
+
+7. Conformance classes
+
+Class
+
+Minimum requirement
+
+FRS generator
+
+Calculates size and SHA-256, emits the exact descriptor, and delegates the PTC to R-01/PTC-F.
+
+FRS verifier
+
+Validates grammar, PTC, size, and SHA-256 when the source is available.
+
+Complete FRS package
+
+Includes the original source and the pieces required for complete verification.
+
+Separate FRS record
+
+Allows the PTC and descriptor to be verified, but not the source; the source result is amber.
+
+Honesty rule
+
+A separate record may be cryptographically valid as a PTC, but it does not allow a claim that the supplied file matches if that file is unavailable.
+
+PART II · Binary identity and descriptor
+
+8. Input
+
+The input MUST be a finite byte sequence. The profile MUST NOT decode it as text, decompress it, open it, execute macros, or infer its internal structure.
+
+Empty file: permitted and has size_bytes equal to 0.
+
+Format: there is no closed enumeration of extensions or MIME types.
+
+Name: not part of the cryptographic identity in FRS-01.
+
+Metadata: MIME, extension, date, and path are informative and live outside the descriptor.
+
+9. Source calculation
+
+1. Obtain the complete byte sequence of the original file.
+
+2. Calculate size_bytes as its exact length in bytes.
+
+3. Calculate source_sha256 = SHA-256(source bytes).
+
+4. Represent source_sha256 as 64 lowercase hexadecimal characters.
+
+5. Construct the descriptor according to the grammar in section 10.
+
+No interpretation
+
+Changing a single byte, re-saving a PDF, recompressing a ZIP, or recoding a video produces a different source even if the visible content appears equivalent.
+
+10. Normative grammar
+
+The canonical form of the isolated descriptor MUST be exactly:
+
+PTC FILE REFERENCE
+profile: file-reference-sha256-v1
+size_bytes: <decimal>
+source_sha256: <64 lowercase hex>
+
+10.1 Compact grammar
+
+descriptor  = header LF profile-line LF size-line LF hash-line LF
+header      = "PTC FILE REFERENCE"
+profile-line = "profile: file-reference-sha256-v1"
+size-line   = "size_bytes: " size
+hash-line   = "source_sha256: " 64LOWHEX
+size        = "0" / NZDIGIT *DIGIT
+DIGIT       = %x30-39
+NZDIGIT     = %x31-39
+LOWHEX      = DIGIT / %x61-66
+LF          = %x0A
+
+10.2 Byte-by-byte rules
+
+The encoding MUST be UTF-8 without BOM.
+
+The four lines MUST appear in the prescribed order.
+
+Each colon MUST be followed by exactly one ASCII space.
+
+Tabs, leading spaces, and trailing spaces are not permitted.
+
+size_bytes MUST NOT contain a sign, separators, or leading zeros, except for the single value 0.
+
+source_sha256 MUST contain exactly 64 lowercase hexadecimal characters.
+
+Generators and verifiers MUST treat size_bytes as a canonical decimal string or an arbitrary-precision integer. They MUST NOT convert it to a floating-point number or to a numeric type that may lose precision.
+
+Additional fields and blank lines within the block are not permitted.
+
+The canonical artefact MUST end in exactly one LF, consistently with R-01 §2.4.
+
+This rule explicitly reproduces what R-01 §2.4 already guarantees so that the grammar is self-contained; it does not introduce an independent normative source.
+
+The prohibition on trailing spaces coincides with the normalisation in R-01 §2.3. It is retained here to fix the output of a conformant generator. If a verifier receives only an already normalised object, it cannot reconstruct whether those characters existed before normalisation.
+
+10.3 Non-conformant examples
+
+Case
+
+Reason
+
+size_bytes: 003
+
+Non-deterministic representation due to leading zeros.
+
+source_sha256: B5D4...
+
+Uppercase hexadecimal.
+
+profile:file-reference-sha256-v1
+
+Mandatory space after the colon is missing.
+
+profile: file-reference-sha256-v2
+
+Unknown profile for this specification.
+
+Additional MIME field
+
+FRS-01 does not permit additional fields.
+
+U+FEFF inside the hash
+
+Invisible non-hexadecimal character; R-01 removes only an initial BOM.
+
+11. Name, MIME, and path
+
+FRS-01 deliberately excludes the name, extension, path, and MIME from the cryptographic identity. Two copies with different names match if their bytes are identical.
+
+Reason
+
+The identity protected by FRS-01 is the file, not its external label. The manifest may preserve the original name, but changing only that name must not require regenerating the PTC.
+
+PART III · Integration, generation, and verification
+
+12. Integration with R-01
+
+The descriptor is the documentary body before the PTC block. R-01 normalises that body and calculates hash_doc_sha256 with hash_scope equal to document_without_ptc_normalized.
+
+source bytes
+        ↓ SHA-256
+source_sha256
+        ↓ insertion into descriptor
+PTC FILE REFERENCE
+        ↓ R-01 normalisation
+hash_doc_sha256
+        ↓ PTC-F serialisation
+single PTC
+
+FRS-01 does not redefine line endings, removal of an initial BOM, trimming of trailing spaces, or any other R-01 operation.
+
+13. Integration with PTC-F
+
+No field is added to the PTC block.
+
+hash_scope remains document_without_ptc_normalized.
+
+hash_doc_sha256 protects the complete normalised descriptor.
+
+hash_ptc_sha256 protects the declaration in accordance with PTC-F and binds the document hash.
+
+hash_ethical_context_sha256 retains its current meaning.
+
+source_sha256 is not a fourth normative PTC hash; it is content of the canonical object.
+
+Transitive chain
+
+Modifying source_sha256 modifies the descriptor; modifying the descriptor changes hash_doc_sha256; and that change prevents the previous PTC from remaining valid. There is no need to add a new field to the PTC.
+
+13.1 Composition with other profiles
+
+FRS-01 does not assume that PTC FILE REFERENCE is the only block present in the canonical object. When the canonical object also includes a PTC DISCLOSURE block, its composition, order, and additional states are governed by the separate disclosure-notice-v1 specification. FRS-01 validates only the file-reference block and the source match.
+
+14. Generation algorithm
+
+1. Receive the final file that the operator wishes to bind.
+
+2. Check that the browser or environment can safely process its size.
+
+3. Calculate size_bytes over the original bytes.
+
+4. Calculate source_sha256 using SHA-256 over those same bytes.
+
+5. Construct the four descriptor lines using the exact grammar.
+
+6. Apply R-01 to the descriptor and calculate hash_doc_sha256.
+
+7. Construct the PTC in accordance with PTC-F, without new fields.
+
+8. Preserve the original file unmodified inside the package when a complete package is generated.
+
+9. Record name, MIME, path, and input_adapter in manifest.json in accordance with the package specification.
+
+Irreversible order
+
+The PTC MUST be generated over the final version of the file. Signing, re-exporting, recompressing, or re-saving afterwards produces another byte sequence and requires a new declaration.
+
+15. Verification algorithm
+
+1. Locate the canonical object and the PTC block.
+
+2. Verify PTC conformance in accordance with PTC-F.
+
+3. Recalculate hash_doc_sha256 in accordance with R-01 and compare it with the declared value.
+
+4. Recognise the PTC FILE REFERENCE header and validate the complete FRS-01 grammar.
+
+5. If the profile is unknown, do not interpret its fields as FRS-01. Because the profile is not recognised, there is no source_sha256 that can be interpreted under this specification; the source block is shown as AMBER for lack of recognition, not as the result of a failed comparison.
+
+6. If the source is available, obtain its bytes without interpreting the format.
+
+7. Compare its length with size_bytes.
+
+8. Calculate SHA-256 and compare it with source_sha256.
+
+9. Emit separate results for the PTC and the source.
+
+Both size and hash MUST match. A divergent size is sufficient to declare that the source does not match, although the verifier MAY continue calculating SHA-256 for diagnostic purposes.
+
+16. Profile detection
+
+16.1 Within a package
+
+manifest.json SHOULD declare input_adapter: file-reference-sha256-v1 to route verification. The manifest is not authoritative: the verifier MUST confirm the header, profile, grammar, and values within the protected object.
+
+16.2 As isolated text
+
+The profile may be inferred only if the body begins at its first textual byte with the exact PTC FILE REFERENCE header and satisfies the complete grammar. Finding that phrase in another position is not sufficient.
+
+If ambiguity remains, the verifier MUST report it and allow the object to be interpreted either as an ordinary textual document or as a file reference. It MUST NOT decide silently.
+
+17. Minimum package contract
+
+The complete package 2.0 specification is defined in PKG-02 v0.4. FRS-01 fixes only the minimum routing: input_adapter identifies the profile and source_path locates the source. The package version, informative names, MIME types, and paths of canonical artefacts belong to PKG-02 and MUST NOT be frozen here.
+
+The location of the descriptor itself within a package belongs to the package-format specification. FRS-01 does not impose a path, but every package transporting this profile MUST provide, through the applicable format, an unambiguous mechanism for locating the descriptor.
+
+{
+  "input_adapter": "file-reference-sha256-v1",
+  "source_path": "source/original_content.ext"
+}
+
+If the manifest contradicts the protected descriptor, the descriptor prevails for cryptographic identity. The contradiction MUST be shown as a package incident.
+
+PART IV · States, security, and compatibility
+
+18. Separate verification results
+
+FRS-01 defines two independent axes: the PTC declaration and the source file. Results MUST be shown in separate blocks and MUST NOT be reduced to a single traffic light or combined by a rule such as “the worst result prevails”. A result on one axis does not rewrite the result on the other.
+
+18.1 PTC declaration
+
+Status
+
+Condition
+
+Minimum message
+
+GREEN
+
+The PTC is conformant and its normative hashes match the canonical object.
+
+The PTC declaration is valid for this canonical object.
+
+RED
+
+The PTC is invalid or one of its normative hashes fails.
+
+The PTC declaration or the protected object has been altered or is non-conformant.
+
+Any additional states defined by PTC-F apply in accordance with that specification. A GREEN PTC does not by itself state that the source is available or matches.
+
+18.2 Source file
+
+Status
+
+Condition
+
+Minimum message
+
+GREEN
+
+Profile recognised; conformant descriptor; source available; size and SHA-256 match.
+
+The file exactly matches the bound file.
+
+AMBER
+
+The source was not supplied.
+
+The original file cannot be checked.
+
+AMBER
+
+The source was supplied, but the device could not process it.
+
+The file could not be checked on this device.
+
+AMBER
+
+The header is recognised, but profile is unknown.
+
+Reference profile not recognised; there is no source comparison.
+
+AMBER
+
+The isolated text permits more than one interpretation.
+
+Select how to interpret the content.
+
+RED
+
+The known profile does not satisfy the FRS-01 grammar.
+
+The file reference is non-conformant.
+
+RED
+
+The source size or SHA-256 does not match.
+
+The supplied file is different.
+
+A GREEN source result states only that the supplied file matches the current descriptor; it does not correct or replace a RED PTC. Likewise, a GREEN PTC accompanied by an AMBER source does not allow a claim that the original file has been checked.
+
+When PTC DISCLOSURE exists, its verification constitutes a third independent axis and is governed by disclosure-notice-v1.
+
+19. Security
+
+Collisions: security depends on the practical collision resistance of SHA-256.
+
+No confidentiality: a fingerprint neither encrypts nor hides the file.
+
+Predictable files: the hash may allow someone to test whether a small, known source matches a guess.
+
+Hostile files: FRS-01 MUST NOT decompress or execute the source.
+
+Paths: package extraction MUST prevent path traversal and dangerous names; this rule belongs to the package format.
+
+Repackaging: changing the distribution ZIP does not by itself invalidate the descriptor or the PTC if their pieces remain intact.
+
+New declaration: anyone may generate a new PTC for a modified file; temporal priority requires external anchoring.
+
+Evidentiary limit
+
+FRS-01 proves internal consistency and match. It does not prove who generated the PTC or on what date the file existed. Electronic signature, registration, DOI, or timestamp may provide that external anchor.
+
+20. Performance and large files
+
+The specification does not set a universal maximum size. An implementation MUST safely reject a file it cannot process without exhausting memory or blocking the device.
+
+Rejection due to capacity produces AMBER, not a false divergence.
+
+The interface SHOULD warn before starting if the size exceeds a known threshold.
+
+Support for multi-GB videos on mobile MUST NOT be promised until real tests have been performed.
+
+A future implementation with incremental hashing may expand capacity without changing the grammar.
+
+21. Compatibility
+
+21.1 New verifier with earlier packages
+
+The new Validator MUST continue verifying earlier packages without imposing FRS-01 or additional requirements from the future package 2.0 format.
+
+21.2 Earlier verifier with FRS-01
+
+An earlier verifier may be able to verify the PTC as text, but it is not required to recognise the adapter or recalculate source_sha256. Full backward functional compatibility does not exist.
+
+21.3 Re-saving and transformation
+
+A visually equivalent copy that has been re-exported, signed, recompressed, or recoded is a different source. A red result is not a false positive: it correctly expresses that the bytes no longer match.
+
+22. Declarative scope in packages with multiple files
+
+When the source is a ZIP or other container, source_sha256 identifies the complete package, but AI participation may refer only to some elements. The interface SHOULD guide the operator to explain this in purpose.
+
+Necessary question to the operator
+
+Does the declaration refer to the complete file or only to particular content, phases, or elements included in it?
+
+PART V · Conformance vectors
+
+23. Vector calculation rule
+
+In the following vectors, hash_doc_sha256 is calculated over the shown ASCII descriptor, encoded in UTF-8 and terminated with exactly one LF. No PTC block is included; its hashes are delegated to the PTC-F vectors.
+
+Vector
+
+Source
+
+Size
+
+source_sha256
+
+hash_doc_sha256
+
+FRS-01
+
+ABC
+
+3
+
+b5d4045c3f466fa91fe2cc6abe79232a1a57cdf104f7a26e716e0a1e2789df78
+
+9002d57a5b85179359b3cd77b3845ac7b7ffaa0f21b9b21bb0490e377e721540
+
+FRS-02
+
+empty file
+
+0
+
+e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+
+596b32e6b0fb5238524b56660a9bb0238b17e36dbdcfaddf2915122200d6852f
+
+FRS-03
+
+one byte 00
+
+1
+
+6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d
+
+46da372ca0e16d97b24d759b1b2cb843b46205a24605c9f8c8fce9c95b736d9e
+
+FRS-04
+
+bytes 00..FF
+
+256
+
+40aff2e9d2d8922e47afd4648e6967497158785fbd1da870e7110266bf944880
+
+c2323fb14b8a27aa7286ef4930b13f666f201015370ccc4e651a1c123c5d3f50
+
+24. FRS-01 — ASCII source ABC
+
+PTC FILE REFERENCE
+profile: file-reference-sha256-v1
+size_bytes: 3
+source_sha256: b5d4045c3f466fa91fe2cc6abe79232a1a57cdf104f7a26e716e0a1e2789df78
+
+Expected result: conformant descriptor; source ABC = GREEN.
+
+25. FRS-05 — source divergence
+
+Verify ASCII source ABD against the FRS-01 descriptor.
+
+Data
+
+Value
+
+size_bytes
+
+3
+
+source_sha256 of ABD
+
+69f0fb8cb1d2195340160eb0e4fcf019b4500be11e00fc55f5d3d108b4914d44
+
+Result
+
+RED — The supplied file is different.
+
+26. Negative grammar vectors
+
+ID
+
+Mutation
+
+Expected result
+
+NEG-01
+
+size_bytes: 03
+
+RED — leading zeros are not permitted.
+
+NEG-02
+
+Hash with uppercase A-F
+
+RED — non-conformant grammar.
+
+NEG-03
+
+UTF-8 BOM at the beginning of the raw artefact
+
+Lexical RED in package; R-01 may normalise it for hashing.
+
+NEG-04
+
+U+FEFF inside source_sha256
+
+RED — not LOWHEX.
+
+NEG-05
+
+Added media_type field
+
+RED — additional field not permitted.
+
+NEG-06
+
+unknown profile
+
+AMBER in source interpretation; not conformant to FRS-01.
+
+NEG-07
+
+Declared size differs with correct hash
+
+RED — source does not match.
+
+NEG-08
+
+Source absent
+
+AMBER — PTC verifiable, source not checked.
+
+27. Minimum interoperability tests
+
+Two independent generators produce exactly the same descriptor bytes for each positive vector.
+
+Two independent verifiers obtain the same states for all negative vectors.
+
+Repackaging the same pieces in another ZIP does not change descriptor or PTC results.
+
+Renaming the source without altering its bytes preserves the match.
+
+Re-saving a PDF or recompressing a ZIP changes the fingerprint when its bytes change.
+
+An unknown profile is never interpreted approximately as FRS-01.
+
+28. Closed questions for hostile review
+
+1. Is the prohibition of leading zeros in size_bytes necessary and sufficient to guarantee a unique decimal representation?
+
+2. Must the file_reference.txt artefact obligatorily end in an LF, or should termination remain only as a consequence of R-01?
+
+3. Is the distinction between lexical conformance of the raw artefact and cryptographic conformance of the normalised object sufficiently clear?
+
+4. Is the “separate FRS record” class correct, or should all FRS conformance be reserved for packages that include the source?
+
+5. Does treating an unknown profile as amber conflict with the statement that the descriptor is not conformant to FRS-01?
+
+6. Does the minimum manifest.json contract contain more fields than this separate specification should assume?
+
+7. Is any relevant edge case missing for empty files, huge files, hostile names, or devices with insufficient memory?
+
+8. Does Annex A distinguish container integrity, object integrity, and declaration integrity with sufficient precision?
+
+29. Resolution of hostile review v0.1
+
+Claude Sonnet 5 independently verified the four vectors and confirmed that the size, source_sha256, and hash_doc_sha256 values match exactly. The review found no architectural objections.
+
+The prohibition on leading zeros in size_bytes is retained.
+
+The final LF remains in the grammar as a self-contained reproduction of R-01 §2.4.
+
+The difference between an unrecognised profile and a failed comparison is made explicit.
+
+The manifest.json contract is reduced to input_adapter and source_path.
+
+size_bytes must be processed with arbitrary precision or as a canonical decimal string.
+
+The distinction between lexical conformance of the raw artefact and cryptographic conformance of the normalised object is confirmed.
+
+30. Resolution of the independent check on v0.2
+
+DeepSeek reviewed FRS-01 v0.2 without prior history. Claude Sonnet 5 contrasted its observations against the actual text and separated new findings from points already resolved. Three precision closures are incorporated, without architectural or vector changes.
+
+Section 18 expressly separates the PTC-declaration and source-file axes and prohibits a collapsed global verdict.
+
+Coexistence with PTC DISCLOSURE is referred to the separate disclosure-notice-v1 specification.
+
+FRS-01 does not fix the descriptor path, but requires the package format to make it unambiguously locatable.
+
+The UTF-8-without-BOM rule is not repeated in the vectors because it is already general in §10.2.
+
+No specific warning about 32-bit integers is added because §10.2 already prohibits any numeric type that may lose precision.
+
+ANNEX A · Why a ZIP hash does not replace FRS-01 or the PTC
+
+This annex is informative. Its purpose is to explain the differentiating element to implementers, critical users, and third parties who reduce the system to a single checksum.
+
+A.1 What a single ZIP hash does solve
+
+A SHA-256 calculated over the distribution ZIP is sufficient to answer one question:
+
+Single question
+
+Does this ZIP container preserve exactly the same bytes as when its fingerprint was calculated?
+
+For download or transport control, that check is useful and may be provided by Zenodo, a repository, or the publishing system itself.
+
+A.2 What it cannot distinguish
+
+Whether the source file, the declaration, the README, or only packaging metadata changed.
+
+Whether the content and the PTC remain valid after extraction and repackaging.
+
+Whether two binary-different ZIPs contain exactly the same relevant pieces.
+
+Which part of the evidentiary structure remains intact.
+
+A new file order, different compression, or different timestamps may change the complete ZIP without changing the bound object or the declaration.
+
+A.3 Separation of responsibilities
+
+Element
+
+Question answered
+
+source_sha256
+
+Is it exactly the same source file?
+
+hash_doc_sha256
+
+Is it the same canonical textual object containing the reference?
+
+hash_ethical_context_sha256
+
+Are the declared conditions of AI participation preserved?
+
+hash_ptc_sha256
+
+Does the complete PTC declaration remain intact and bound?
+
+External ZIP hash
+
+Is it exactly the same distribution container?
+
+A.4 Self-reference problem
+
+If the ZIP hash is stored inside the ZIP itself, inserting it changes the container and therefore its hash. It must be kept outside or a special exclusion must be defined. FRS-01 avoids that circularity because source_sha256 refers to the source file, not to the package that transports the declaration.
+
+A.5 Essential difference
+
+Summary
+
+A ZIP hash protects one specific box. FRS-01 and the PTC allow the source file, the canonical object, and what was declared about its production to be verified separately, even if the box is extracted, reorganised, or repackaged.
+
+A.6 They are not competing layers
+
+An external ZIP hash may be added as a distribution control. It does not replace FRS-01 and does not require turning it into a fourth normative PTC hash. Each layer answers a different question.
+
+31. Freezing criterion
+
+Implementation test
+
+Implementation criterion: two independent teams must be able to generate the same descriptor, obtain the same vectors, and emit the same states without asking what the drafter meant.
+
+32. Traceability of this version
+
+Function
+
+Responsible
+
+Final decision and responsibility
+
+Manuel Barrera Anglada
+
+Drafting and consolidation v0.3
+
+GPT-5.6 Thinking (OpenAI)
+
+Hostile review
+
+Claude Sonnet 5 (Anthropic) — v0.1 and consolidation of v0.2
+
+Independent check
+
+DeepSeek — blank-context reading of v0.2
+
+Status
+
+TECHNICALLY FROZEN

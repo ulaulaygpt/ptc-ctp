@@ -1,0 +1,1372 @@
+EL CANAL · VALIDATOR · TECHNICAL SPECIFICATION
+
+DCL-03 v0.3
+
+disclosure-notice-v1 profile
+
+Verifiable public notice for AI-generated or AI-modified content
+
+Technically frozen version
+
+Title
+
+DCL-03 — Technical specification of the disclosure-notice-v1 profile
+
+Version
+
+v0.3 — technically frozen
+
+Date
+
+3 August 2026
+
+Status
+
+TECHNICALLY FROZEN; authorized basis for implementation
+
+Public name of the capability
+
+Prepare public notice for AI content
+
+Final decision and responsibility
+
+Manuel Barrera Anglada
+
+Drafting and consolidation
+
+GPT-5.6 Thinking (OpenAI)
+
+Hostile review v0.1
+
+Claude Sonnet 5 (Anthropic) — v0.1 and cross-check of v0.2 completed
+
+Independent review v0.2
+
+DeepSeek — completed and cross-checked by Claude Sonnet 5
+
+Authorized basis
+
+FRS-01 v0.3 and PKG-02 v0.4 frozen; Decisions v0.4 FINAL CERRADA
+
+Governing principle
+
+DCL-03 protects a public declaration and makes it possible to regenerate notice.txt exactly. It does not demonstrate that the declaration is true, that the notice was actually shown to the public, or that a URL will remain available in the future.
+
+Document map
+
+DCL-03 defines what is declared, how it is composed with FRS-01, which visible text is derived, what Validator can verify, and where its claims end.
+
+Part
+
+Content
+
+I
+
+Purpose, scope, terms, and permitted claims.
+
+II
+
+Grammar of the PTC DISCLOSURE block and canonical composition.
+
+III
+
+Generation, verification, and separation of axes.
+
+IV
+
+Deterministic derivation of notice.txt.
+
+V
+
+HTML, SVG, QR, and integration with Package Format 2.0.
+
+VI
+
+States, URL, public exposure, security, and compatibility.
+
+VII
+
+Executable, negative, and presentation vectors.
+
+Annex A
+
+What the public notice proves and does not prove.
+
+Architectural invariant
+
+One exact file, one composite canonical object, and one PTC. PTC DISCLOSURE creates neither another PTC nor a fourth hash; it is protected within hash_doc_sha256.
+
+PART I · Scope and meaning
+
+1. Purpose
+
+DCL-03 defines a textual block declaring an artificial-intelligence intervention on a file and a human-readable public derivation of that declaration. The block is integrated into the same canonical object as the exact file reference.
+
+2. Scope
+
+Grammar of PTC DISCLOSURE.
+
+Closed values of type and treatment of language.
+
+Rules for verification_url.
+
+Composition with file-reference-sha256-v1.
+
+Byte-for-byte derivation of PUBLIC_NOTICE/notice.txt.
+
+Generation requirements for notice.html, notice.svg, and qr.svg.
+
+Independent disclosure states.
+
+Integration with PKG-02 and its vectors.
+
+3. Out of scope
+
+Automatically determining whether content was generated or modified with AI.
+
+Legally classifying content as a deepfake or certifying regulatory compliance.
+
+Demonstrating that the notice was shown on first exposure or on a particular platform.
+
+Guaranteeing availability, persistence, or future content of verification_url.
+
+Hosting the package, creating a public page, or reserving a DOI.
+
+Applying disclosure-notice-v1 directly to ordinary textual content.
+
+Defining a mandatory graphic design or comparing HTML, SVG, or QR byte for byte.
+
+4. References
+
+Reference
+
+Function
+
+R-01 v1.1
+
+Normalization and hashing of the composite canonical object.
+
+PTC-F v1.2
+
+Fields and hashes of the single PTC block.
+
+FRS-01 v0.3
+
+Mandatory first block and link to the exact source.
+
+PKG-02 v0.4
+
+PUBLIC_NOTICE/ folder, manifest, paths, and package axis.
+
+Decisions v0.4
+
+Restricted scope, closed values, and disclosure limits.
+
+5. Normative vocabulary
+
+MUST and MUST NOT express requirements; SHOULD and SHOULD NOT express recommendations that require justification to depart from; MAY expresses a permitted option.
+
+6. Terms
+
+Term
+
+Definition
+
+Disclosure block
+
+PTC DISCLOSURE and its protected fields.
+
+Normative notice
+
+PUBLIC_NOTICE/notice.txt, deterministically derived.
+
+Presentation artefact
+
+HTML, SVG, or QR intended to display or link to the notice.
+
+Declared URL
+
+Protected verification_url value, independently of its availability.
+
+Availability
+
+Observable response of the URL at a particular moment; external and temporary state.
+
+Effective exposure
+
+The fact that a person saw the notice; not verifiable by DCL-03.
+
+Type
+
+Declared category of AI participation, not an automatic technical classification.
+
+7. Permitted and prohibited claims
+
+Validator can assert
+
+Validator cannot assert
+
+The protected block declares one of the permitted types.
+
+That the declaration is materially true.
+
+notice.txt exactly matches that declaration.
+
+That HTML, SVG, or QR were the artefacts shown to the public.
+
+The declared URL has conformant HTTPS syntax.
+
+That the URL existed, exists now, or will continue to exist.
+
+The exact source matches when FRS-01 is green.
+
+That a platform-recompressed copy is byte-for-byte identical.
+
+The package contains the pieces required by PKG-02.
+
+That the set by itself satisfies a specific legal obligation.
+
+PART II · Grammar and composition
+
+8. Composition scope
+
+In version 1, disclosure-notice-v1 MUST appear only as the second block of a canonical object whose first block conforms to file-reference-sha256-v1.
+
+MUST NOT appear in isolation.
+
+MUST NOT be appended directly to an ordinary textual canonical object.
+
+MUST appear exactly once.
+
+MUST come after PTC FILE REFERENCE.
+
+Exactly one blank line MUST exist between the two blocks.
+
+The single PTC block is appended after the complete composite object.
+
+9. Normative form
+
+PTC DISCLOSURE
+profile: disclosure-notice-v1
+type: <type>
+language: <language>
+verification_url: <HTTPS URL>
+
+The verification_url line is optional. When omitted, language is the last line. The block always ends in exactly one LF.
+
+9.1 Compact grammar
+
+disclosure = header LF profile-line LF type-line LF language-line [url-line LF]
+header = "PTC DISCLOSURE"
+profile-line = "profile: disclosure-notice-v1"
+type-line = "type: " disclosure-type
+language-line = "language: " language-token
+url-line = "verification_url: " https-uri
+disclosure-type = "ai_generated" / "ai_modified" / "ai_generated_or_modified"
+language-token = 2*8LOWALPHA
+LOWALPHA = %x61-7A
+LF = %x0A
+
+9.2 Byte-for-byte rules
+
+UTF-8 encoding without BOM.
+
+Fixed field order.
+
+Exactly one ASCII space after each colon.
+
+No tabs, leading spaces, trailing spaces, or additional lines.
+
+Unknown fields are not permitted within disclosure-notice-v1.
+
+type, language, or verification_url may not be repeated.
+
+A duplicated block or a block in the wrong position produces RED on the disclosure axis.
+
+10. type values
+
+Value
+
+Declared meaning
+
+ai_generated
+
+The operator declares that the content was generated with AI.
+
+ai_modified
+
+The operator declares that the content was modified with AI.
+
+ai_generated_or_modified
+
+The operator declares AI generation or modification without distinguishing between the two possibilities.
+
+type does not express intensity, percentage, legal authorship, deepfake status, deception, or regulatory compliance. An unknown value produces RED on the disclosure axis.
+
+Validator MUST NOT perform a semantic comparison between type and the PTC purpose field. Both values are verified within their respective structures, but an apparent narrative contradiction between them does not by itself produce RED or authorize an inference about the material truth of the declaration.
+
+11. language values
+
+Version 1 supports es, en, and fr. language identifies the notice.txt template, not the language of the source file.
+
+Value
+
+Status
+
+es
+
+Supported.
+
+en
+
+Supported.
+
+fr
+
+Supported.
+
+Other well-formed token
+
+AMBER: unsupported language; the PTC is not invalidated for this reason.
+
+Malformed token
+
+RED: invalid disclosure structure.
+
+12. verification_url
+
+It is optional.
+
+MUST be an absolute HTTPS URL with a non-empty host.
+
+MUST be represented in ASCII; internationalized domains use punycode and other characters are percent-encoded.
+
+MUST NOT contain username, password, spaces, CR, LF, or control characters.
+
+MUST NOT exceed 2048 UTF-8 bytes.
+
+May include a port, path, query, and fragment.
+
+Changing any character of the URL changes the canonical object and requires generation of a new PTC.
+
+Declared URL is not the same as available URL
+
+A URL reserved for a future publication may be valid even if it does not yet respond. Syntax belongs to the protected object; availability is a temporary and informative check.
+
+13. Composite canonical object
+
+PTC FILE REFERENCE
+profile: file-reference-sha256-v1
+size_bytes: <decimal>
+source_sha256: <64 lowercase hex>
+
+PTC DISCLOSURE
+profile: disclosure-notice-v1
+type: <type>
+language: <language>
+[verification_url: <HTTPS URL>]
+
+The composite object ends in one LF. The PTC is appended immediately afterwards, in accordance with R-01. The blank line between the two blocks is part of the protected object.
+
+14. Retroactivity of the hash
+
+Required order
+
+The notice MUST be decided and incorporated before calculating hash_doc_sha256. Adding, removing, or modifying PTC DISCLOSURE after generating the PTC changes the canonical object and requires a new declaration.
+
+PART III · Generation and verification
+
+15. Generation algorithm
+
+1. Freeze the final version of the source file.
+
+2. Generate PTC FILE REFERENCE in accordance with FRS-01.
+
+3. Collect type, language and, optionally, verification_url.
+
+4. Validate values, syntax, and limits.
+
+5. Construct PTC DISCLOSURE using the exact grammar.
+
+6. Compose both blocks with a single blank line.
+
+7. Calculate hash_doc_sha256 over the normalized composite object.
+
+8. Generate the single PTC in accordance with PTC-F.
+
+9. Derive notice.txt exactly.
+
+10. Generate the permitted presentation artefacts.
+
+11. Build the package in accordance with PKG-02.
+
+16. Verification algorithm
+
+1. Verify the PTC and hash_doc_sha256 in accordance with R-01/PTC-F.
+
+2. Confirm that the first block satisfies FRS-01.
+
+3. Locate the second block in the exact position.
+
+4. Validate header, order, fields, type, and syntax of language and URL.
+
+5. Determine whether language is supported.
+
+6. Regenerate notice.txt from type, language, and verification_url.
+
+7. Compare notice.txt byte for byte.
+
+8. Optionally check availability of verification_url.
+
+9. Inspect the presence of presentation artefacts in accordance with PKG-02. Decoding the content of qr.svg is optional for the verifier; if it does so and obtains a URL different from verification_url, it MUST emit RED on the package axis without, for that reason alone, changing the independent disclosure result.
+
+10. Emit disclosure as a separate axis.
+
+17. Separation of results
+
+PTC declaration:        GREEN / RED
+Source file:            GREEN / AMBER / RED
+Package structure:      GREEN / AMBER / RED
+Public disclosure:      GREEN / AMBER / RED
+
+DCL-03 MUST NOT create a global verdict or apply “worst result prevails”. A temporarily inaccessible URL does not make a valid PTC false; a modified notice.txt does not by itself alter the source bytes.
+
+The disclosure axis MUST be shown only when PTC DISCLOSURE exists or when a recognizable disclosure attempt is detected, such as a malformed block, public_notice in manifest.json, or entries under PUBLIC_NOTICE/.
+
+When no disclosure block or artefact exists, the interface MUST omit this axis. It MAY show, outside the traffic-light system, the neutral indication “No public notice”. This omission does not create a fourth state and does not constitute AMBER.
+
+AMBER is reserved for recognizable disclosure attempts that cannot be fully resolved, such as a well-formed but unsupported language or an unavailable external check.
+
+PART IV · Normative notice.txt
+
+18. Function
+
+PUBLIC_NOTICE/notice.txt is the only derived artefact whose byte-for-byte equality forms part of the disclosure axis. It is generated exclusively from type, language, and verification_url.
+
+19. Exact serialization
+
+Without verification_url:
+
+<TITLE>
+LF
+<BODY>
+LF
+
+With verification_url:
+
+<TITLE>
+LF
+<BODY>
+LF
+<URL_LABEL>: <verification_url>
+LF
+
+UTF-8 without BOM.
+
+Exactly one blank line between title and body.
+
+When a URL exists, exactly one blank line between body and verification line.
+
+No trailing spaces.
+
+Exactly one final LF.
+
+profile, type, language, date, hash, and technical explanations are not added.
+
+20. Titles and labels
+
+Language
+
+Title
+
+URL label
+
+es
+
+AVISO PÚBLICO SOBRE EL USO DE IA
+
+Verificación
+
+en
+
+PUBLIC NOTICE ON THE USE OF AI
+
+Verification
+
+fr
+
+AVIS PUBLIC SUR L'UTILISATION DE L'IA
+
+Vérification
+
+21. Exact bodies
+
+Language
+
+type
+
+Body
+
+es
+
+ai_generated
+
+Este contenido ha sido generado con inteligencia artificial.
+
+es
+
+ai_modified
+
+Este contenido ha sido modificado con inteligencia artificial.
+
+es
+
+ai_generated_or_modified
+
+Este contenido ha sido generado o modificado con inteligencia artificial.
+
+en
+
+ai_generated
+
+This content was generated with artificial intelligence.
+
+en
+
+ai_modified
+
+This content was modified with artificial intelligence.
+
+en
+
+ai_generated_or_modified
+
+This content was generated or modified with artificial intelligence.
+
+fr
+
+ai_generated
+
+Ce contenu a été généré à l'aide de l'intelligence artificielle.
+
+fr
+
+ai_modified
+
+Ce contenu a été modifié à l'aide de l'intelligence artificielle.
+
+fr
+
+ai_generated_or_modified
+
+Ce contenu a été généré ou modifié à l'aide de l'intelligence artificielle.
+
+22. Template changes
+
+The strings above are part of disclosure-notice-v1. Correcting punctuation, style, or translation would change notice.txt and require a new profile version. A v1 verifier MUST preserve these strings.
+
+PART V · Presentation and integration with PKG-02
+
+23. notice.html and notice.svg
+
+They are presentation artefacts, not cryptographic authorities.
+
+A conformant generator MUST display the same semantic title and body as notice.txt.
+
+MAY change design, typography, dimensions, accessibility, and styles.
+
+A verifier MUST NOT require byte-for-byte equality or turn the disclosure axis red because of visual differences.
+
+An obvious detected contradiction MAY be shown as a package or presentation warning.
+
+24. qr.svg
+
+Generated only when verification_url exists.
+
+A conformant generator MUST encode only the exact verification_url string.
+
+MUST NOT introduce text, identifiers, hashes, or tracking data inside the QR.
+
+The absence of a QR when a URL exists is a package incident under PKG-02.
+
+Changing the bytes or style of the QR does not by itself invalidate the disclosure axis.
+
+If a verifier chooses to decode qr.svg and obtains a URL different from verification_url, it MUST emit RED on the package axis because of contradiction with an authoritative artefact. The disclosure axis continues to depend on the protected block and notice.txt.
+
+25. PUBLIC_NOTICE/ folder
+
+PUBLIC_NOTICE/
+    README.txt
+    notice.txt
+    notice.html
+    notice.svg
+    qr.svg       # only with verification_url
+
+The presence of PTC DISCLOSURE, public_notice in manifest.json, and PUBLIC_NOTICE/ MUST be coherent in accordance with PKG-02.
+
+Coherence between files present in PUBLIC_NOTICE/ and paths declared in public_notice is governed by PKG-02.
+
+Additional files do not by themselves alter the disclosure axis. A safe additional entry may produce AMBER on the package axis, and a dangerous, ambiguous, or contradictory entry may produce RED on that axis, in accordance with PKG-02.
+
+26. public_notice object
+
+{
+  "public_notice": {
+    "profile": "disclosure-notice-v1",
+    "readme_path": "PUBLIC_NOTICE/README.txt",
+    "notice_path": "PUBLIC_NOTICE/notice.txt",
+    "html_path": "PUBLIC_NOTICE/notice.html",
+    "svg_path": "PUBLIC_NOTICE/notice.svg",
+    "qr_path": "PUBLIC_NOTICE/qr.svg",
+    "verification_url": "https://example.org/declaration"
+  }
+}
+
+qr_path and verification_url appear together or are omitted together. The manifest routes; the protected block determines type, language, and URL.
+
+PART VI · States, URL, and limits
+
+27. Disclosure-axis states
+
+The total absence of disclosure is not represented in this table: the axis is not instantiated. The table applies when a block or recognizable disclosure attempt exists.
+
+Status
+
+Condition
+
+Minimum message
+
+GREEN
+
+Conformant block, supported language, and exact notice.txt.
+
+The public notice matches the protected declaration.
+
+AMBER
+
+Well-formed but unsupported language.
+
+Notice language not supported by this version.
+
+AMBER
+
+Conformant URL but unavailable or not checkable.
+
+The declared address could not be confirmed now.
+
+AMBER
+
+The device cannot read notice.txt or check the URL.
+
+Incomplete disclosure check.
+
+RED
+
+Mandatory field absent, duplicated, out of order, or invalid type.
+
+The disclosure block is not conformant.
+
+RED
+
+verification_url exists but does not satisfy the syntax.
+
+The declared address is not a conformant HTTPS URL.
+
+RED
+
+notice.txt is missing or differs byte for byte.
+
+The normative notice does not match the protected declaration.
+
+RED
+
+Block duplicated, isolated, or composed without FRS-01.
+
+Disclosure composition not permitted.
+
+RED
+
+public_notice or PUBLIC_NOTICE/ entries exist, but there is no protectable PTC DISCLOSURE.
+
+There is a notice attempt without the canonical declaration that must govern it.
+
+28. URL availability
+
+The network check is optional.
+
+CORS, offline mode, DNS, TLS, or temporary failure MUST NOT invalidate the PTC.
+
+An HTTP response does not demonstrate that the page displays the correct package.
+
+A reserved URL may remain amber until publication.
+
+A 301, 302, 307, or 308 response to a different destination is recorded as availability information or as operational AMBER. The redirect does not modify the protected object or the disclosure axis.
+
+The final destination of a redirect MUST NOT silently replace verification_url or be considered cryptographically equivalent.
+
+Validator MUST NOT assert future persistence.
+
+29. Effective exposure
+
+Limit not resolvable by the package
+
+DCL-03 can demonstrate that a protected notice existed and that notice.txt represented it correctly. It cannot demonstrate that a platform, institution, or person displayed it at the required time.
+
+30. Platform-transformed copies
+
+A platform may recompress an image or transcode a video. FRS-01 identifies the preserved original; the notice and URL maintain public traceability. Validator MUST NOT assert that the bytes reproduced by the platform match the original unless independently checked.
+
+31. Security and privacy
+
+verification_url is made public within the block, notice.txt, HTML, SVG, and QR.
+
+The URL SHOULD NOT contain secret tokens, unnecessary personal data, or temporary identifiers.
+
+HTML artefacts MUST NOT include scripts, trackers, or remote resources by default.
+
+The QR MUST NOT encode anything other than the URL.
+
+The URL check SHOULD avoid sending the source file or PTC to third parties.
+
+32. Compatibility
+
+A newer Validator MUST continue to verify packages without disclosure.
+
+A verifier that does not know disclosure-notice-v1 may verify the PTC as text, but not the disclosure axis.
+
+An unknown profile produces disclosure AMBER, not automatic PTC invalidity.
+
+Future changes to HTML, SVG, or QR libraries must not turn old packages red.
+
+Future disclosure for ordinary textual content will require another profile and does not modify v1.
+
+PART VII · Conformance vectors
+
+33. DCL-V01 — Spanish, ai_modified, with URL
+
+Source: ASCII bytes ABC. Declared URL: https://example.org/validator/dcl-v01.
+
+33.1 Exact canonical object
+
+PTC FILE REFERENCE
+profile: file-reference-sha256-v1
+size_bytes: 3
+source_sha256: b5d4045c3f466fa91fe2cc6abe79232a1a57cdf104f7a26e716e0a1e2789df78
+
+PTC DISCLOSURE
+profile: disclosure-notice-v1
+type: ai_modified
+language: es
+verification_url: https://example.org/validator/dcl-v01
+
+Size: 280 bytes. hash_doc_sha256: 8929e35b21fd5113d1ecf66b550b55f9cfa9fc11f2efc8b1ab477f6711f5825e.
+
+33.2 Exact notice.txt
+
+AVISO PÚBLICO SOBRE EL USO DE IA
+
+Este contenido ha sido modificado con inteligencia artificial.
+
+Verificación: https://example.org/validator/dcl-v01
+
+Size: 152 bytes. SHA-256: b5598da8c7a02bd0470f8bb39ec2cb7d3e8e4eb593d7bc82ce2306b1010f4768.
+
+33.3 Exact PTC and preimages
+
+Field
+
+Exact value
+
+version
+
+R-01
+
+level
+
+standard
+
+operator
+
+Manuel Barrera Anglada
+
+date_utc
+
+2026-08-03T10:24:00Z
+
+ai_system
+
+GPT-5.6 Thinking (OpenAI)
+
+co_creation_mode
+
+human-ai dialogue and deterministic fixture generation
+
+human_review
+
+full
+
+purpose
+
+Executable conformance vector DCL-V01 for DCL-03 disclosure-notice-v1.
+
+hash_scope
+
+document_without_ptc_normalized
+
+orcid
+
+0009-0000-8891-7021
+
+Exact ptc.txt of the vector:
+
+<PTC>
+version: R-01
+level: standard
+operator: Manuel Barrera Anglada
+date_utc: 2026-08-03T10:24:00Z
+ai_system: GPT-5.6 Thinking (OpenAI)
+co_creation_mode: human-ai dialogue and deterministic fixture generation
+human_review: full
+purpose: Executable conformance vector DCL-V01 for DCL-03 disclosure-notice-v1.
+hash_scope: document_without_ptc_normalized
+hash_doc_sha256: 8929e35b21fd5113d1ecf66b550b55f9cfa9fc11f2efc8b1ab477f6711f5825e
+hash_ptc_sha256: f5754819a75a1e11fce86c45529d428899924b73caac8c7c9e9e7e860c4e176d
+hash_ethical_context_sha256: 64efbbf3250ffb03a7bc1e1fc06fda3979d9b679fde1f96c59483f8a43755e09
+orcid: 0009-0000-8891-7021
+</PTC>
+
+The hash_ptc_sha256 preimage is this same block without the hash_ptc_sha256 line, ending at </PTC> and without a final LF. The exact ethical preimage is:
+
+R-01|standard|Manuel Barrera Anglada|2026-08-03T10:24:00Z|GPT-5.6 Thinking (OpenAI)|human-ai dialogue and deterministic fixture generation|full|Executable conformance vector DCL-V01 for DCL-03 disclosure-notice-v1.
+
+33.4 PTC and ZIP hashes
+
+Element
+
+Value
+
+hash_doc_sha256
+
+8929e35b21fd5113d1ecf66b550b55f9cfa9fc11f2efc8b1ab477f6711f5825e
+
+hash_ptc_sha256
+
+f5754819a75a1e11fce86c45529d428899924b73caac8c7c9e9e7e860c4e176d
+
+hash_ethical_context_sha256
+
+64efbbf3250ffb03a7bc1e1fc06fda3979d9b679fde1f96c59483f8a43755e09
+
+Physical ZIP
+
+DCL-V01_disclosure-notice-v1_es_with_url.zip
+
+ZIP size
+
+12143 bytes
+
+ZIP SHA-256
+
+7214e3cbf5e2b217138e75e03b4dd517ed33c1bccda10538c4e24d8d6ba0e3c0
+
+34. DCL-V02 — French, ai_generated_or_modified, without URL
+
+Source: ASCII bytes XYZ. There is no verification_url or qr.svg.
+
+34.1 Exact canonical object
+
+PTC FILE REFERENCE
+profile: file-reference-sha256-v1
+size_bytes: 3
+source_sha256: ade099751d2ea9f3393f0f32d20c6b980dd5d3b0989dea599b966ae0d3cd5a1e
+
+PTC DISCLOSURE
+profile: disclosure-notice-v1
+type: ai_generated_or_modified
+language: fr
+
+Size: 237 bytes. hash_doc_sha256: fc9c91fb11c81257c4d579b63858dabbd3611976ddbc56b3eb78e940eaabd001.
+
+34.2 Exact notice.txt
+
+AVIS PUBLIC SUR L'UTILISATION DE L'IA
+
+Ce contenu a été généré ou modifié à l'aide de l'intelligence artificielle.
+
+Size: 122 bytes. SHA-256: a3120dc8d544e393e35244cc9259cd968da83f837c5e71fd382a5ddaf7c328a1.
+
+34.3 Exact PTC and preimages
+
+Field
+
+Exact value
+
+version
+
+R-01
+
+level
+
+standard
+
+operator
+
+Manuel Barrera Anglada
+
+date_utc
+
+2026-08-03T10:25:00Z
+
+ai_system
+
+GPT-5.6 Thinking (OpenAI)
+
+co_creation_mode
+
+human-ai dialogue and deterministic fixture generation
+
+human_review
+
+full
+
+purpose
+
+Executable conformance vector DCL-V02 for DCL-03 disclosure-notice-v1.
+
+hash_scope
+
+document_without_ptc_normalized
+
+orcid
+
+0009-0000-8891-7021
+
+Exact ptc.txt of the vector:
+
+<PTC>
+version: R-01
+level: standard
+operator: Manuel Barrera Anglada
+date_utc: 2026-08-03T10:25:00Z
+ai_system: GPT-5.6 Thinking (OpenAI)
+co_creation_mode: human-ai dialogue and deterministic fixture generation
+human_review: full
+purpose: Executable conformance vector DCL-V02 for DCL-03 disclosure-notice-v1.
+hash_scope: document_without_ptc_normalized
+hash_doc_sha256: fc9c91fb11c81257c4d579b63858dabbd3611976ddbc56b3eb78e940eaabd001
+hash_ptc_sha256: 7d1a42925bf6775b940ac58027abed8080706041c248a059fab35e3256ecc181
+hash_ethical_context_sha256: bd57206c0e678b8ad8c00ec450a746a4821aaab0eaaac499d8a30ba439d309bd
+orcid: 0009-0000-8891-7021
+</PTC>
+
+The hash_ptc_sha256 preimage is this same block without the hash_ptc_sha256 line, ending at </PTC> and without a final LF. The exact ethical preimage is:
+
+R-01|standard|Manuel Barrera Anglada|2026-08-03T10:25:00Z|GPT-5.6 Thinking (OpenAI)|human-ai dialogue and deterministic fixture generation|full|Executable conformance vector DCL-V02 for DCL-03 disclosure-notice-v1.
+
+34.4 PTC and ZIP hashes
+
+Element
+
+Value
+
+hash_doc_sha256
+
+fc9c91fb11c81257c4d579b63858dabbd3611976ddbc56b3eb78e940eaabd001
+
+hash_ptc_sha256
+
+7d1a42925bf6775b940ac58027abed8080706041c248a059fab35e3256ecc181
+
+hash_ethical_context_sha256
+
+bd57206c0e678b8ad8c00ec450a746a4821aaab0eaaac499d8a30ba439d309bd
+
+Physical ZIP
+
+DCL-V02_disclosure-notice-v1_fr_without_url.zip
+
+ZIP size
+
+4909 bytes
+
+ZIP SHA-256
+
+78133c819a4d8bff44300928c10eff45c9e7223938a6aa944b7e0404bb01351c
+
+35. Template vectors
+
+Language
+
+type
+
+Bytes without URL
+
+SHA-256 of notice.txt
+
+es
+
+ai_generated
+
+96
+
+5763b2d37842e72a2a22ddec42a30e46c0d952cf60ae2e9a3672785b265f8c06
+
+es
+
+ai_modified
+
+98
+
+577c2355726b7896da91742ba408ad9a02f7ac7ec0e9bf6a3c2119603cbe2ab4
+
+es
+
+ai_generated_or_modified
+
+109
+
+08a6a3d6ca790cc42518dd9c98a753fac2dbd155ac435a75d9de65a9139d3c70
+
+en
+
+ai_generated
+
+89
+
+5bbf5ae9c9c14bd4a7cc3fb0b569f2e2419d34fd7ff3dde3310bba2d1b0d0676
+
+en
+
+ai_modified
+
+88
+
+f3c34a9b0fb96b65d0f5c77f3829bc304f267937b9ecf0f7f2a313f8708d349b
+
+en
+
+ai_generated_or_modified
+
+101
+
+7d4c165b09c8396d2c75ffb002aadb601af94aaf97275eb2f6382c39fc2ea11b
+
+fr
+
+ai_generated
+
+110
+
+e51911d60d154552ff6929eaa3a4248ce59e43a625d30273cd6b0b20afa58a5a
+
+fr
+
+ai_modified
+
+109
+
+d3223cdadba57ba1dfb8ea2813ddcec0935edbdf20377433cff87d90fb71443b
+
+fr
+
+ai_generated_or_modified
+
+122
+
+a3120dc8d544e393e35244cc9259cd968da83f837c5e71fd382a5ddaf7c328a1
+
+36. Negative vectors
+
+ID
+
+Mutation
+
+Expected result
+
+NEG-01
+
+Two blank lines between FRS-01 and PTC DISCLOSURE
+
+Disclosure RED and different hash_doc.
+
+NEG-02
+
+PTC DISCLOSURE before PTC FILE REFERENCE
+
+RED: order not permitted.
+
+NEG-03
+
+type: ai_assisted
+
+RED: unknown type.
+
+NEG-04
+
+language: de
+
+AMBER: valid token, unsupported language.
+
+NEG-05
+
+language: ES
+
+RED: token malformed because of uppercase letters.
+
+NEG-06
+
+verification_url: http://example.org
+
+RED: not HTTPS.
+
+NEG-07
+
+URL with space or credentials
+
+RED: prohibited syntax.
+
+NEG-08
+
+notice.txt with one punctuation mark changed
+
+RED: byte-for-byte divergence.
+
+NEG-09
+
+PTC DISCLOSURE exists, but notice.txt is missing
+
+Disclosure RED; other axes remain separate.
+
+NEG-10
+
+HTML or SVG modified, notice.txt intact
+
+Disclosure does not turn red; optional warning.
+
+NEG-11
+
+QR visually different but same URL
+
+No normative disclosure failure.
+
+NEG-12
+
+QR decodes to another URL
+
+Package RED for contradiction; the disclosure axis does not change if the block and notice.txt match.
+
+NEG-13
+
+PTC DISCLOSURE isolated in ordinary text
+
+RED: composition out of scope.
+
+NEG-14
+
+Unknown profile
+
+Disclosure AMBER; PTC verified separately.
+
+NEG-15
+
+Valid HTTPS URL responds with 301/302 to another destination
+
+Informative availability AMBER; does not alter the disclosure axis or replace the declared URL.
+
+NEG-16
+
+No PTC DISCLOSURE, public_notice, or PUBLIC_NOTICE/ exists
+
+Disclosure axis is not shown; optional neutral indication “No public notice”.
+
+NEG-17
+
+PUBLIC_NOTICE/ or public_notice exists, but PTC DISCLOSURE is missing
+
+Disclosure RED for ungoverned attempt; package is additionally evaluated in accordance with PKG-02.
+
+NEG-18
+
+PUBLIC_NOTICE/ contains a safe undeclared additional file
+
+Disclosure does not change by itself; package AMBER in accordance with PKG-02.
+
+37. Minimum interoperability tests
+
+Two generators produce the same block and notice.txt for all nine type × language combinations.
+
+Two verifiers obtain the same states for all negative vectors.
+
+The physical DCL-V01 and DCL-V02 ZIPs open in accordance with PKG-02.
+
+The absence of a URL simultaneously omits verification_url, qr_path, and qr.svg.
+
+Changing only HTML, SVG, or QR does not change hash_doc_sha256 or the notice.txt result.
+
+The declared URL remains distinct from its availability.
+
+A divergent QR produces package RED and is not treated as a mere visual difference.
+
+An HTTP redirect is recorded as temporary remote behavior and does not rewrite verification_url.
+
+No disclosure result collapses PTC, source, or package.
+
+Two interfaces equally omit the disclosure axis when the function was never invoked.
+
+A recognizable attempt without PTC DISCLOSURE produces the same disclosure RED in all verifiers.
+
+Additional files in PUBLIC_NOTICE/ affect the package axis in accordance with PKG-02 without, by themselves, changing the notice.txt result.
+
+38. Closed questions for hostile review
+
+1. Are the three type strings sufficiently clear and free of implicit legal classification?
+
+2. Is treating an unknown language as AMBER compatible with a closed language list?
+
+3. Is the verification_url grammar precise enough for independent implementations?
+
+4. Should URL fragments be prohibited to avoid non-equivalent destinations, or is allowing them correct?
+
+5. Does the exact derivation of notice.txt cover all relevant line endings and spaces?
+
+6. Is the difference between generator requirements and mandatory verifier checks for HTML, SVG, and QR sufficiently clear?
+
+7. Should decoding a QR with a divergent URL remain a warning or produce package RED?
+
+8. Does omitting the axis when no disclosure attempt exists correctly preserve the three-state vocabulary without hiding a real anomaly?
+
+9. Do DCL-V01 and DCL-V02 publish enough preimages to reproduce the PTCs without depending on the physical ZIP?
+
+10. Is any vector missing for reserved or unavailable URLs, redirects, or changed remote content?
+
+39. Resolution of hostile review v0.1
+
+Claude Sonnet 5 computationally verified the nine templates and the two physical vectors, including the actual QR content of DCL-V01. No discrepancies were found in the published values.
+
+QR decoding remains optional for the verifier.
+
+A divergent QR URL is elevated to RED on the package axis, without collapsing the disclosure axis.
+
+The fields, ptc.txt, and exact preimages of DCL-V01 and DCL-V02 are published within the specification.
+
+The HTTP redirect case is added as an informative external check.
+
+In v0.2, type, language, URL fragments, and all normative templates remained unchanged. The treatment of total absence of disclosure is subsequently revised in §40.
+
+40. Resolution of independent review v0.2
+
+DeepSeek considered DCL-03 v0.2 technically sound and identified four possible improvements. Claude Sonnet 5 checked each one against the actual document.
+
+The alleged absence of sizes in §35 is rejected: the table already publishes all nine sizes in bytes.
+
+An explicit reference to PKG-02 is added for additional files within PUBLIC_NOTICE/.
+
+It is expressly stated that purpose and type are not compared semantically.
+
+The diagnosis concerning total absence of disclosure is accepted, but no fourth state is created: when the function was never invoked, the axis is omitted and a neutral indication may be shown outside the traffic-light system.
+
+AMBER remains reserved for unresolved recognizable attempts; an attempt without PTC DISCLOSURE produces RED.
+
+The nine templates, two physical vectors, preimages, and published hashes are not modified.
+
+ANNEX A · The notice is not a certification of truth
+
+This annex is informative. It summarizes the exact authority DCL-03 adds to the system and the claims it deliberately leaves outside.
+
+A.1 Chain of authority
+
+exact file
+    ↓ source_sha256
+PTC FILE REFERENCE
+
+public declaration
+    ↓ protected composition
+PTC DISCLOSURE
+
+composite object
+    ↓ hash_doc_sha256
+single PTC
+
+type × language × URL
+    ↓ deterministic derivation
+notice.txt
+
+notice.txt
+    ↓ presentation
+HTML / SVG / QR
+
+A.2 Four different facts
+
+Fact
+
+Does DCL-03 prove it?
+
+The operator declared a category of AI intervention.
+
+Yes, as protected content.
+
+notice.txt corresponds exactly to that declaration.
+
+Yes, by deterministic regeneration.
+
+The declared URL had HTTPS syntax.
+
+Yes.
+
+The URL was available at a particular moment.
+
+Informative check only.
+
+The notice was actually shown to the public.
+
+No.
+
+The declaration about AI was true.
+
+No.
+
+The copy seen on a platform was the exact original file.
+
+No, unless independently verified.
+
+A specific legal obligation was satisfied.
+
+Not certified by DCL-03.
+
+A.3 Summary
+
+Essential difference
+
+DCL-03 does not turn a claim into truth. It turns a public claim into a precise, bound, reproducible, and verifiable object, while preserving the boundary between declaring, displaying, and demonstrating.
+
+41. Freeze criterion
+
+Implementation test
+
+Implementation criterion: two independent implementations must be able to compose the object, regenerate all nine templates, verify the two physical packages, consistently omit the axis when there is no disclosure attempt, and emit the same states for incomplete attempts, without inferring material truth, legal compliance, or effective exposure.
+
+42. Traceability
+
+Function
+
+Responsible
+
+Final decision and responsibility
+
+Manuel Barrera Anglada
+
+Drafting and consolidation v0.3
+
+GPT-5.6 Thinking (OpenAI)
+
+Reviews and cross-checking
+
+Claude Sonnet 5 (Anthropic) — v0.1 review and cross-check of v0.2 review
+
+Independent review v0.2
+
+DeepSeek — completed
+
+Status
+
+TECHNICALLY FROZEN

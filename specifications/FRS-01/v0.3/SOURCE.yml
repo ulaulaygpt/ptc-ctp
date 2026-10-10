@@ -1,0 +1,10 @@
+id: FRS-01
+version: v0.3
+doi: 10.5281/zenodo.21830122
+archival_authority: Zenodo
+license: CC-BY-4.0
+representation: "Plain-text extraction generated from exact SHA-256-verified canonical DOCX artefacts."
+canonical_sha256:
+  ES: f1ddde9ab5a26ab2c4d1f71b194cf29a21e2306b418c3b878d1c239d4318ecc6
+  EN: 95415ab27042a07e78ffb2af5790421c1fa6c4a61bcdd70e3bafe8a94e4c3afd
+  FR: 483a9cbb0a22dc660adfbc78d447c9b1cbb4dae8c7a1ed51678747b69e2435a1

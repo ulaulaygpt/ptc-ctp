@@ -1,0 +1,10 @@
+id: DCL-03
+version: v0.3
+doi: 10.5281/zenodo.21830264
+archival_authority: Zenodo
+license: CC-BY-4.0
+representation: "Plain-text extraction generated from exact SHA-256-verified canonical DOCX artefacts."
+canonical_sha256:
+  ES: e1b9ce5593b939b9c78eeb2ab35c0b558fcbea9b4289ee50132f4d30c00fb198
+  EN: fca37c05a6e182c13210fd9d124b4f3c1398268c6b499f0b98bed89e6fb893b5
+  FR: 9bb6ca0cff27e711f77c0e93d052d58cafc1ecc8a269d7ada77fcb35c343861d

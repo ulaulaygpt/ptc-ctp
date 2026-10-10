@@ -1,0 +1,10 @@
+id: PKG-02
+version: v0.4
+doi: 10.5281/zenodo.21830169
+archival_authority: Zenodo
+license: CC-BY-4.0
+representation: "Plain-text extraction generated from exact SHA-256-verified canonical DOCX artefacts."
+canonical_sha256:
+  ES: 6f526919e84917a05877ee59f666edbbaad93ba05e10478d620636997b68491a
+  EN: abf127c57ccd233aa82a8f6160f067b1c30b03d51383460a4c2247d5e71bab6e
+  FR: e39e4c4989a5b3f4f5b206d3aae8c218361eb3027db6ba4900985e209a10f1e4

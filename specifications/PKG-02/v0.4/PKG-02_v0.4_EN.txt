@@ -1,0 +1,1440 @@
+EL CANAL · VALIDATOR · TECHNICAL SPECIFICATION
+
+PKG-02 v0.4
+
+Validator Package Format 2.0
+
+Transport, preservation, and reconstruction of a verifiable structure
+
+Technically frozen version
+
+Title
+
+PKG-02 — Validator Package Format 2.0
+
+Version
+
+v0.4 — technically frozen
+
+Date
+
+3 August 2026
+
+Status
+
+TECHNICALLY FROZEN; authorised basis for implementation
+
+Final decision and responsibility
+
+Manuel Barrera Anglada
+
+Drafting and consolidation
+
+GPT-5.6 Thinking (OpenAI)
+
+Hostile reviews
+
+Claude Sonnet 5 (Anthropic) — v0.1 and v0.3 completed
+
+Independent checks
+
+DeepSeek — v0.2 and v0.3 completed and cross-checked
+
+Authorised basis
+
+FRS-01 v0.3 frozen and Architectural Decisions v0.4 FINAL CLOSED
+
+Governing principle
+
+The package is a transport, preservation, and reconstruction container. It is not by itself the protected cryptographic object and does not replace the authority of the source file and canonical object with PTC.
+
+Document map
+
+PKG-02 defines which pieces travel together, the authority of each, how they are located, how their coherence is checked, and what a verifier must do when faced with contradictions or risks.
+
+Part
+
+Content
+
+I
+
+Purpose, scope, references, and authority model.
+
+II
+
+ZIP structure, mandatory and optional artefacts.
+
+III
+
+manifest.json: grammar, fields, and routing.
+
+IV
+
+Generation, verification, redundancy, and reconstruction.
+
+V
+
+Package conformance as a separate axis.
+
+VI
+
+Security, operational limits, and reproducibility.
+
+VII
+
+Compatibility, publication, and repackaging.
+
+VIII
+
+Interoperability, contradiction, and attack vectors.
+
+Annex A
+
+Authority matrix and response to the single-hash objection.
+
+Inherited invariant
+
+One protected canonical object, one PTC, and the three normative hashes. PKG-02 organises and transports those pieces; it creates neither a fourth hash nor a global cryptographic verdict.
+
+PART I · Scope and authority
+
+1. Purpose
+
+PKG-02 defines an interoperable ZIP format for transporting an exact source, its FRS-01 reference, a PTC, derived copies, routing metadata, and, optionally, public-disclosure materials.
+
+The specification is intended to allow a third party to find the pieces, verify each axis separately, detect internal contradictions, and reconstruct derived copies without blindly trusting the manifest.
+
+2. Scope
+
+Minimum and extended structure of package 2.0.
+
+Roles and authority hierarchy of each artefact.
+
+Grammar and semantics of manifest.json.
+
+Exact relationships between the integrated record and derived copies.
+
+Generation, verification, and reconstruction.
+
+Structural conformance of the package as an independent axis.
+
+Security rules for ZIP paths, entries, and resources.
+
+Compatibility with earlier packages and repackaging.
+
+Interoperability, contradiction, and hostile-treatment vectors.
+
+3. Out of scope
+
+Redefining R-01, PTC-F, ARCH, or FRS-01.
+
+Defining the normative content of disclosure-notice-v1.
+
+Turning the outer ZIP hash into the cryptographic root of the system.
+
+Asserting operator identity, temporal priority, or legal validity.
+
+Interpreting the internal content of the source.
+
+Guaranteeing unlimited extraction or processing of files of any size on any device.
+
+Fixing a hosting service or public URL.
+
+4. References
+
+Reference
+
+Function
+
+R-01 v1.1
+
+Canonical object, hashes, and bottom-anchored PTC extraction.
+
+PTC-F v1.2
+
+Canonical form and semantics of the PTC block.
+
+ARCH v0.3
+
+General architecture, adapters, packages, and states.
+
+FRS-01 v0.3
+
+file-reference-sha256-v1 descriptor and verification of the exact source.
+
+Closed v0.4 decisions
+
+Planned structure, optional notice, and architectural limits.
+
+5. Normative vocabulary
+
+MUST and MUST NOT express conformance requirements; SHOULD and SHOULD NOT express recommendations that require justification to depart from; MAY expresses a permitted option.
+
+6. Terms
+
+Term
+
+Definition
+
+Source
+
+Exact file whose bytes are identified through FRS-01.
+
+Integrated record
+
+Canonical object followed by the PTC block in a single self-contained artefact.
+
+Derived copy
+
+Artefact extracted from the integrated record to facilitate reading or processing.
+
+Manifest
+
+JSON map that locates and describes pieces; it is not cryptographic authority.
+
+Complete package
+
+ZIP 2.0 with all mandatory entries present and coherent.
+
+Recoverable package
+
+Non-conformant ZIP with sufficient pieces to verify or reconstruct the core.
+
+Package incident
+
+Structural or coherence defect that must not collapse the PTC, source, or disclosure axes.
+
+Repackaging
+
+Creation of another ZIP with the same relevant pieces, possibly with different outer bytes.
+
+7. Authority model
+
+Level
+
+Artefact
+
+Authority
+
+A
+
+File at source_path
+
+Authority over its own bytes; compared with FRS-01.
+
+A
+
+canonical/file_reference_with_ptc.txt
+
+Primary, self-contained integrated record.
+
+B
+
+canonical/file_reference.txt
+
+Exact derived copy of the body extracted from the integrated record.
+
+B
+
+ptc.txt
+
+Exact derived copy of the extracted PTC block.
+
+C
+
+manifest.json
+
+Routes and describes; never corrects or replaces A or B.
+
+D
+
+README.txt and presentations
+
+Explain or present; create no cryptographic authority.
+
+Precedence rule
+
+If manifest.json contradicts the integrated record or source, the manifest is wrong. If a derived copy contradicts the integrated record, the derived copy is wrong. The contradiction affects package conformance but does not rewrite the authoritative artefact.
+
+PART II · Package structure
+
+8. Defined profile and class
+
+PKG-02 defines complete packages for input_adapter equal to file-reference-sha256-v1. A separate FRS record without the source may remain useful in accordance with FRS-01, but it does not constitute a complete package 2.0.
+
+9. Mandatory minimum structure
+
+manifest.json
+README.txt
+ptc.txt
+
+source/
+    <a single source file>
+
+canonical/
+    file_reference.txt
+    file_reference_with_ptc.txt
+
+Directories may exist as explicit entries or be implicit through file paths. Conformance is decided by file entries, not by the presence of ZIP directory entries.
+
+A package 2.0 with GREEN status MUST NOT contain file entries other than the mandatory ones, those declared through public_notice, or those defined by a normative extension expressly recognised by the verifier.
+
+A safe additional entry that is undeclared and has no normative function produces AMBER on the package axis and MUST NOT be silently ignored.
+
+A dangerous additional entry, one that is ambiguous with respect to reserved roles, or one that contradicts an authoritative artefact produces RED on the package axis.
+
+10. Structure with optional disclosure
+
+manifest.json
+README.txt
+ptc.txt
+
+source/
+    <a single source file>
+
+canonical/
+    file_reference.txt
+    file_reference_with_ptc.txt
+
+PUBLIC_NOTICE/
+    README.txt
+    notice.txt
+    notice.html
+    notice.svg
+    qr.svg                # only if verification_url exists
+
+The PUBLIC_NOTICE/ folder appears only when the canonical object incorporates a PTC DISCLOSURE block. Its normative content and states are governed by disclosure-notice-v1.
+
+11. Mandatory entries
+
+Entry
+
+Obligation
+
+Function
+
+manifest.json
+
+MUST
+
+Location, version, profile, and metadata.
+
+README.txt
+
+MUST
+
+Minimum human-readable instructions.
+
+ptc.txt
+
+MUST
+
+Derived copy of the PTC block.
+
+source_path
+
+MUST
+
+Single exact source transported.
+
+canonical/file_reference.txt
+
+MUST
+
+Derived copy of the FRS-01 canonical object.
+
+canonical/file_reference_with_ptc.txt
+
+MUST
+
+Authoritative integrated record.
+
+12. Path rules
+
+All internal paths MUST use / as separator.
+
+The names of all entries MUST be unambiguously decodable as UTF-8.
+
+When a name contains non-ASCII characters, the ZIP format UTF-8 indicator (bit 11 of the general purpose bit flag) MUST be set. A non-ASCII name without that indicator produces RED on the package axis.
+
+Reserved normative paths remain exclusively ASCII.
+
+Paths MUST be relative and may not begin with /, \\, or a drive letter.
+
+Empty segments, . and .. are not permitted after separator normalisation.
+
+NUL and control characters U+0000–U+001F or U+007F are not permitted in entry names.
+
+The reserved paths manifest.json, README.txt, ptc.txt, and canonical/ are case-sensitive and MUST appear exactly as shown.
+
+There may not be more than one entry producing the same normalised path.
+
+Collisions differing only in letter case are not permitted.
+
+Symbolic links, hard links, and entries redirecting outside the ZIP are not permitted.
+
+13. Single-source rule
+
+A package 2.0 MUST contain exactly one file entry identified by source_path. That entry MUST be a direct descendant of source/ and may not be manifest.json, a canonical artefact, or presentation material.
+
+The source MAY itself be a ZIP. The inner ZIP is the declared object; the outer ZIP is only the transport package.
+
+14. Stored name and original name
+
+The entry name in source/ may preserve a safe name or use a sanitised one. original_filename preserves the base name declared by the operator and is not part of the cryptographic identity.
+
+original_filename MUST NOT contain path separators or control characters.
+
+A name change without a byte change does not require regenerating the PTC.
+
+A source_path change does require updating manifest.json, but does not modify the descriptor or its hashes.
+
+PART III · manifest.json
+
+15. Physical form
+
+MUST be valid JSON encoded as UTF-8 without BOM.
+
+MUST contain a JSON object at the root.
+
+Comments, duplicate keys, and NaN/Infinity values are not permitted.
+
+Path strings use / and must comply with section 12.
+
+Key order and indentation are not normative.
+
+A generator SHOULD emit LF and terminate the file with a single LF for reproducibility.
+
+16. Mandatory fields
+
+Key
+
+Type
+
+Value or function
+
+package_format_version
+
+string
+
+Exact value "2.0".
+
+input_adapter
+
+string
+
+Exact value "file-reference-sha256-v1".
+
+source_path
+
+string
+
+Path of the single source.
+
+canonical_path
+
+string
+
+Path of the derived descriptor copy.
+
+canonical_with_ptc_path
+
+string
+
+Path of the integrated record.
+
+ptc_path
+
+string
+
+Path of the derived PTC copy.
+
+readme_path
+
+string
+
+Path of the main README.
+
+original_filename
+
+string
+
+Informative base name of the source.
+
+media_type
+
+string
+
+Informative MIME; application/octet-stream if unknown.
+
+17. Mandatory path values in v2.0
+
+Key
+
+Exact value
+
+canonical_path
+
+canonical/file_reference.txt
+
+canonical_with_ptc_path
+
+canonical/file_reference_with_ptc.txt
+
+ptc_path
+
+ptc.txt
+
+readme_path
+
+README.txt
+
+source_path is variable because it preserves or sanitises the source name. The other values are frozen so that a package can be recovered even when the manifest is damaged.
+
+18. Minimum example
+
+{
+  "package_format_version": "2.0",
+  "input_adapter": "file-reference-sha256-v1",
+  "source_path": "source/original_content.ext",
+  "canonical_path": "canonical/file_reference.txt",
+  "canonical_with_ptc_path": "canonical/file_reference_with_ptc.txt",
+  "ptc_path": "ptc.txt",
+  "readme_path": "README.txt",
+  "original_filename": "original_content.ext",
+  "media_type": "application/octet-stream"
+}
+
+19. public_notice object
+
+When disclosure exists, manifest.json MUST include public_notice. The key uses snake_case and is not the literal name of the PUBLIC_NOTICE/ folder.
+
+{
+  "public_notice": {
+    "profile": "disclosure-notice-v1",
+    "readme_path": "PUBLIC_NOTICE/README.txt",
+    "notice_path": "PUBLIC_NOTICE/notice.txt",
+    "html_path": "PUBLIC_NOTICE/notice.html",
+    "svg_path": "PUBLIC_NOTICE/notice.svg",
+    "qr_path": "PUBLIC_NOTICE/qr.svg",
+    "verification_url": "https://example.org/declaration"
+  }
+}
+
+public_notice MUST be omitted entirely when no disclosure exists.
+
+profile MUST be disclosure-notice-v1.
+
+readme_path, notice_path, html_path, and svg_path MUST be present.
+
+qr_path and verification_url appear together or are omitted together.
+
+verification_url MUST comply with disclosure-notice-v1 rules; PKG-02 only transports it.
+
+The presence of public_notice in manifest.json and the presence of PUBLIC_NOTICE/ in the ZIP MUST be coherent. Their divergence constitutes a package incident and MUST NOT by itself alter the independent results of the PTC declaration or the source.
+
+20. Unknown keys
+
+An unknown key does not alter the PTC or the source. A verifier MUST ignore it for cryptographic verification, but SHOULD show a package incident so that a typographical error does not pass unnoticed.
+
+21. The manifest is not a source of truth
+
+The verifier uses manifest.json to route the process and then confirms every assertion against the actual pieces. input_adapter does not turn arbitrary text into FRS-01; source_path does not change the declared bytes; and original_filename or media_type do not modify identity.
+
+PART IV · Generation, verification, and reconstruction
+
+22. Generation algorithm
+
+1. Finalise the final version of the source file.
+
+2. Calculate size and source_sha256 in accordance with FRS-01.
+
+3. Generate file_reference.txt in accordance with FRS-01.
+
+4. Generate the PTC in accordance with R-01 and PTC-F.
+
+5. Construct file_reference_with_ptc.txt by concatenating the canonical object and the PTC block according to R-01.
+
+6. Extract the body and PTC block from the integrated record to produce the two derived copies.
+
+7. Copy the source unmodified to source_path.
+
+8. Generate manifest.json with the actual paths and informative metadata.
+
+9. Generate README.txt.
+
+10. If disclosure exists, generate the materials and public_notice in accordance with its specification.
+
+11. Create the ZIP without encryption and apply the security and reproducibility rules.
+
+Source stable during the process
+
+The implementation MUST detect, where the environment permits, whether the source changes between calculation of its fingerprint and incorporation into the ZIP. On divergence, it must abort and start again.
+
+23. Verification algorithm
+
+1. Inspect the ZIP central directory before extraction and apply security limits.
+
+2. Normalise and validate all paths; reject dangerous or ambiguous entries.
+
+3. Locate manifest.json and check its form.
+
+4. Locate the integrated record by its fixed path and extract the body and PTC according to R-01.
+
+5. Verify the PTC and canonical object in accordance with R-01/PTC-F.
+
+6. Confirm that the body satisfies FRS-01 and that input_adapter is coherent.
+
+7. Compare the extracted body exactly with canonical/file_reference.txt.
+
+8. Compare the extracted block exactly with ptc.txt.
+
+9. Locate source_path and verify size and source_sha256 in accordance with FRS-01.
+
+10. Check that all declared paths exist and point to the expected artefact type.
+
+11. If public_notice exists, delegate its verification to disclosure-notice-v1.
+
+12. Emit separate results for PTC, source, package, and disclosure.
+
+24. Equality of derived copies
+
+extract_body(canonical/file_reference_with_ptc.txt)
+    == bytes(canonical/file_reference.txt)
+
+extract_ptc(canonical/file_reference_with_ptc.txt)
+    == bytes(ptc.txt)
+
+Equality is byte-for-byte. Derived copies are not re-normalised to hide physical divergences. The integrated record already contains the applicable canonical forms.
+
+25. Reconstruction
+
+Situation
+
+Permitted action
+
+file_reference.txt missing
+
+Reconstruct it by extracting the body from the integrated record; package non-conformant but recoverable.
+
+ptc.txt missing
+
+Reconstruct it by extracting the PTC block; package non-conformant but recoverable.
+
+README.txt missing
+
+Does not affect cryptography; package non-conformant but recoverable.
+
+manifest.json missing
+
+Use fixed paths to recover the core; source_path may require human intervention.
+
+Integrated record missing
+
+Do not silently reconstruct it as authority; use separate pieces only as a separate FRS record.
+
+Source missing
+
+PTC verifiable; source not checked; not a complete package.
+
+26. Internal contradictions
+
+Contradiction
+
+Authority that prevails
+
+Effect
+
+Manifest points to another canonical path
+
+Fixed path and integrated record
+
+Package non-conformant; manifest incorrect.
+
+file_reference.txt differs from integrated body
+
+Integrated record
+
+Package RED; PTC is verified against the integrated record.
+
+ptc.txt differs from integrated PTC
+
+Integrated record
+
+Package RED; derived copy incorrect.
+
+Source matches derived copy but not integrated body
+
+Integrated record
+
+Source RED for the protected object.
+
+media_type contradicts extension or content
+
+Neither is identity
+
+Informative package incident.
+
+Two manifest.json files
+
+Neither
+
+Unsafe/unprocessable package.
+
+PART V · Package conformance as a separate axis
+
+27. Prohibition of a collapsed global verdict
+
+Results MUST be shown in independent blocks. Package conformance MUST NOT overwrite the status of the PTC, source, or disclosure and MUST NOT be combined by a rule such as “the worst result prevails”.
+
+PTC declaration:        GREEN / RED
+Source file:            GREEN / AMBER / RED
+Package structure:      GREEN / AMBER / RED
+Public disclosure:      GREEN / AMBER / RED   # when present
+
+28. Package-axis states
+
+Status
+
+Condition
+
+Minimum message
+
+GREEN
+
+Mandatory entries present, safe paths, conformant manifest, and coherent copies.
+
+The package 2.0 is structurally conformant.
+
+AMBER
+
+Recoverable defect: a derived copy, README, or manifest is missing; the core can be located or reconstructed.
+
+The package has incidents but preserves verifiable elements.
+
+AMBER
+
+The device rejects a package due to local limits even though the package itself presents no structural violation.
+
+It could not be fully processed on this device.
+
+RED
+
+Contradiction between integrated record and derived copies.
+
+The package contains incompatible representations.
+
+RED
+
+Dangerous, duplicate, or ambiguous paths, encryption, or multiple manifests.
+
+The package cannot be processed safely.
+
+RED
+
+The authoritative integrated record is missing.
+
+It is not a complete package 2.0; a separate record may exist.
+
+AMBER
+
+A safe, undeclared additional entry with no normative function exists.
+
+The package contains unrecognised additional material; the other axes remain separate.
+
+RED
+
+A dangerous additional entry exists, is ambiguous with respect to reserved roles, or is contradictory.
+
+The package contains material preventing safe structural interpretation.
+
+RED
+
+A non-ASCII name is not unambiguously marked as UTF-8.
+
+The path cannot be interpreted interoperably.
+
+Example of asymmetry
+
+A package may be RED because ptc.txt contradicts the integrated record, while the PTC declaration extracted from the integrated record remains GREEN. The user must see both facts, not a single red light.
+
+29. Conformance and recoverability
+
+GREEN means complete conformance. AMBER means the ZIP does not meet every requirement but preserves enough structure for partial verification or explicit reconstruction. RED means a serious contradiction, absence of the authoritative artefact, or processing risk.
+
+PART VI · Security and reproducibility
+
+30. Inspection before extraction
+
+The verifier MUST read ZIP metadata before writing files to disk.
+
+It MUST reject absolute paths, traversal, links, and normalised duplicates.
+
+It MUST prevent one entry from overwriting another or a local file outside the temporary area.
+
+It MUST NOT execute, actively preview, or decompress the internal source merely in order to verify the package.
+
+It MUST treat the source as opaque bytes, even when it is another ZIP.
+
+31. Encryption, signatures, and ZIP extensions
+
+Package 2.0 MUST NOT be encrypted or password-protected.
+
+It MUST NOT depend on multi-volume archives.
+
+It MAY use ZIP64 when size requires it and the implementation supports it.
+
+ZIP extra fields and timestamps are not part of cryptographic authority.
+
+An external signature of the ZIP may coexist, but lies outside PKG-02.
+
+32. Resource limits
+
+Each implementation MUST apply configurable limits on number of entries, total uncompressed size, per-entry size, compression ratio, time, and memory. Exceeding a local limit does not by itself demonstrate that the package is malicious.
+
+Case
+
+Result
+
+Local limit exceeded without a prohibited structural feature
+
+AMBER — not fully processable on this device.
+
+Impossible ZIP sizes or incoherent metadata
+
+RED — malformed or unsafe package.
+
+Extreme compression ratio
+
+Abort before extraction; classify according to policy and available evidence.
+
+Very large source stored without compression
+
+May be verified through incremental reading if the implementation supports it.
+
+33. ZIP reproducibility
+
+The hash of the outer ZIP is not normative. Nevertheless, a generator SHOULD favour reproducible packages:
+
+The outer ZIP hash MUST NOT be used as a package-conformance verdict or as a substitute for source_sha256 or the internal PTC hashes.
+
+stable entry order;
+
+stable paths and UTF-8 encoding;
+
+controlled or documented timestamps;
+
+stable compression policy;
+
+absence of device-dependent extra data when unnecessary.
+
+Two different ZIPs may be equivalent packages if they contain the same authoritative pieces and coherent derived pieces.
+
+34. Source change during packaging
+
+Where possible, the generator SHOULD obtain the source from a stable snapshot or check file size, identifier, and date before and after reading it. If it detects a change, it MUST NOT emit the package.
+
+PART VII · Compatibility, publication, and repackaging
+
+35. Earlier packages
+
+A new Validator MUST continue generating and verifying earlier packages without requiring package_format_version 2.0. Absence of this field activates the legacy flow; it is not interpreted as a defective package 2.0.
+
+36. Packages 2.0 in earlier validators
+
+An earlier validator may not recognise manifest.json, FRS-01, or PUBLIC_NOTICE/. There is no guarantee of backward functional compatibility. The TXT pieces remain readable and preservable.
+
+37. Repackaging
+
+Extracting and recreating the ZIP does not automatically invalidate the declaration, source, or notice. The new container must be re-evaluated as a package; its internal axes are verified independently.
+
+38. External ZIP hash
+
+A repository MAY publish SHA-256, MD5, or another checksum of the ZIP as a download control. That value answers the identity of the container and does not replace source_sha256 or the PTC hashes.
+
+39. Publication and URL
+
+PKG-02 does not host the package or generate a public URL. When verification_url exists, it may already be active or be a reserved persistent address that will begin resolving after publication. Its availability is informative and does not alter the hashes.
+
+PART VIII · Interoperability vectors
+
+40. Vector PKG-V01 — minimum package with source ABC
+
+PKG-V01 is an executable physical fixture. All of its files, preimages, bytes, and fingerprints are published below and are also distributed in the companion ZIP PKG-V01_Validator_Package_Format_2.0_vector.zip.
+
+Scope of the vector
+
+The six entry fingerprints are reproducible and verifiable. The fingerprints of manifest.json and README.txt fix only the bytes of this fixture: they do not turn their texts into universal templates or cryptographic authority.
+
+40.1 Exact source and descriptor
+
+The source contains exactly the hexadecimal bytes 41 42 43, equivalent to ASCII ABC.
+
+PTC FILE REFERENCE
+profile: file-reference-sha256-v1
+size_bytes: 3
+source_sha256: b5d4045c3f466fa91fe2cc6abe79232a1a57cdf104f7a26e716e0a1e2789df78
+
+file_reference.txt ends in exactly one LF. Its size is 147 bytes and its SHA-256 is 9002d57a5b85179359b3cd77b3845ac7b7ffaa0f21b9b21bb0490e377e721540.
+
+40.2 Exact declarative PTC values
+
+Field
+
+Exact logical value
+
+version
+
+R-01
+
+level
+
+standard
+
+operator
+
+Manuel Barrera Anglada
+
+date_utc
+
+2026-08-03T00:00:00Z
+
+ai_system
+
+GPT-5.6 Thinking (OpenAI)
+
+co_creation_mode
+
+human-ai dialogue and deterministic fixture generation
+
+human_review
+
+full
+
+purpose
+
+Executable conformance vector PKG-V01 for PKG-02 package format 2.0.
+
+hash_scope
+
+document_without_ptc_normalized
+
+orcid
+
+0009-0000-8891-7021
+
+The exact ethical preimage is formed by joining the first eight contextual values with U+007C. hash_ethical_context_sha256 = da890ee5fa5b5d9b93b16626be9da95e837f9d00c56187c8953a8bf0dea75b29.
+
+40.3 Exact ptc.txt
+
+<PTC>
+version: R-01
+level: standard
+operator: Manuel Barrera Anglada
+date_utc: 2026-08-03T00:00:00Z
+ai_system: GPT-5.6 Thinking (OpenAI)
+co_creation_mode: human-ai dialogue and deterministic fixture generation
+human_review: full
+purpose: Executable conformance vector PKG-V01 for PKG-02 package format 2.0.
+hash_scope: document_without_ptc_normalized
+hash_doc_sha256: 9002d57a5b85179359b3cd77b3845ac7b7ffaa0f21b9b21bb0490e377e721540
+hash_ptc_sha256: aa7801011631dd5aac902544f0d103480d6e7b6c837a52cb993019af11d4f1f4
+hash_ethical_context_sha256: da890ee5fa5b5d9b93b16626be9da95e837f9d00c56187c8953a8bf0dea75b29
+orcid: 0009-0000-8891-7021
+</PTC>
+
+To calculate hash_ptc_sha256, this same block is used without the hash_ptc_sha256 line, ending at the > character of </PTC> and without a final LF. The result is aa7801011631dd5aac902544f0d103480d6e7b6c837a52cb993019af11d4f1f4.
+
+40.4 Integrated record
+
+canonical/file_reference_with_ptc.txt is obtained by concatenating, without an additional separator, the 147 bytes of file_reference.txt and the bytes of ptc.txt. The final LF of the descriptor is the physical separator immediately before <PTC>.
+
+40.5 Exact manifest.json
+
+{
+  "package_format_version": "2.0",
+  "input_adapter": "file-reference-sha256-v1",
+  "source_path": "source/ABC.bin",
+  "canonical_path": "canonical/file_reference.txt",
+  "canonical_with_ptc_path": "canonical/file_reference_with_ptc.txt",
+  "ptc_path": "ptc.txt",
+  "readme_path": "README.txt",
+  "original_filename": "ABC.bin",
+  "media_type": "application/octet-stream"
+}
+
+The manifest.json file ends in exactly one LF. Without that LF it is 375 bytes; the published fixture contains 376 bytes.
+
+40.6 Exact README.txt
+
+PKG-V01 - Validator Package Format 2.0 conformance vector
+
+This package is an executable fixture for PKG-02.
+Verify the integrated record first, then compare the derived copies and source/ABC.bin.
+The outer ZIP hash is informative and is not a normative root of trust.
+
+README.txt ends in exactly one LF.
+
+40.7 Reproducible entry fingerprints
+
+Entry
+
+Bytes
+
+SHA-256
+
+Function
+
+source/ABC.bin
+
+3
+
+b5d4045c3f466fa91fe2cc6abe79232a1a57cdf104f7a26e716e0a1e2789df78
+
+Authoritative source
+
+canonical/file_reference.txt
+
+147
+
+9002d57a5b85179359b3cd77b3845ac7b7ffaa0f21b9b21bb0490e377e721540
+
+Derived canonical object
+
+ptc.txt
+
+642
+
+223f34140a2693b32f0195a52ae7b62d3bb72773767fec533b59697c98b493aa
+
+Executable derived copy
+
+canonical/file_reference_with_ptc.txt
+
+789
+
+68af623e45401576bf31bdf6d4f1a68c94d222064a79bddc9f3e12c5017b3410
+
+Authoritative integrated record
+
+Auxiliary file
+
+Bytes
+
+SHA-256
+
+Scope
+
+manifest.json
+
+376
+
+1a867888776bfabf479fa91e86cd53f9007c1ea24e9085fe97826ebcbef28ef4
+
+Executable fixture; not a universal template
+
+README.txt
+
+269
+
+41ce0ca8ad7a893ead9090a6ccff4fe5a9f9d5d06a7a804168b3d0307a11c164
+
+Executable fixture; not a universal template
+
+40.8 Physical ZIP and reproducible recipe
+
+Property
+
+Exact fixture value
+
+Name
+
+PKG-V01_Validator_Package_Format_2.0_vector.zip
+
+Entries and order
+
+manifest.json; README.txt; ptc.txt; source/ABC.bin; canonical/file_reference.txt; canonical/file_reference_with_ptc.txt
+
+Compression
+
+ZIP_STORED, no compression
+
+Date of each entry
+
+1980-01-01T00:00:00, minimum ZIP value
+
+Mode
+
+regular file 0644; create_system = 3
+
+Extra fields and comment
+
+empty
+
+Outer size
+
+2922 bytes
+
+Outer SHA-256
+
+ec50789755f55fe798ae412136a9adede87b77e3cd72fe7f6e94893cf0ac8cef
+
+The outer hash remains informative
+
+The recipe allows the physical fixture ZIP to be reproduced exactly and its distribution to be checked. This does not turn that hash into a normative root: different repackaging may preserve the PTC, source, and internal relationships intact.
+
+41. Vector PKG-V02 — equivalent repackaging
+
+Create two ZIPs with the six PKG-V01 entries, but with different order, compression, or timestamps. Expected result: outer hashes may differ; PTC, source, and internal coherence remain GREEN; the package is GREEN if both comply with the structural rules.
+
+42. Recovery vectors
+
+ID
+
+Mutation
+
+Package
+
+Other axes
+
+REC-01
+
+Remove README.txt
+
+AMBER
+
+PTC and source may remain GREEN.
+
+REC-02
+
+Remove file_reference.txt
+
+AMBER
+
+Reconstructed from the integrated record.
+
+REC-03
+
+Remove ptc.txt
+
+AMBER
+
+Reconstructed from the integrated record.
+
+REC-04
+
+Remove manifest.json
+
+AMBER
+
+Core through fixed paths; source may require selection.
+
+REC-05
+
+Remove the source
+
+AMBER
+
+PTC GREEN; source AMBER.
+
+REC-06
+
+Remove integrated record
+
+RED
+
+Separate pieces may be treated as an FRS record, not a complete package.
+
+43. Contradiction and additional-entry vectors
+
+ID
+
+Mutation
+
+Expected result
+
+CON-01
+
+Alter one byte of file_reference.txt, integrated record intact
+
+Package RED; PTC and source verified against integrated record.
+
+CON-02
+
+Alter ptc.txt, integrated record intact
+
+Package RED; integrated PTC retains its own result.
+
+CON-03
+
+Manifest points to canonical/other.txt
+
+Package RED or recoverable AMBER depending on fixed-path localisation; manifest does not prevail.
+
+CON-04
+
+source_path points to integrated record
+
+Package RED; invalid source role.
+
+CON-05
+
+Two sources under source/, only one declared
+
+Package RED due to ambiguity and disallowed content.
+
+CON-06
+
+Incorrect media_type
+
+Incident; does not change source or PTC.
+
+ADD-01
+
+Add safe notes.txt, undeclared and without normative function
+
+Package AMBER; PTC, source, and disclosure do not change by themselves.
+
+ADD-02
+
+Add undeclared canonical/alternate.txt
+
+Package RED due to role ambiguity; do not treat it as authority.
+
+44. Hostile vectors
+
+ID
+
+Entry or condition
+
+Expected result
+
+SEC-01
+
+../manifest.json
+
+RED; do not extract.
+
+SEC-02
+
+/absolute/source.bin
+
+RED; do not extract.
+
+SEC-03
+
+C:\source\file.bin
+
+RED; do not extract.
+
+SEC-04
+
+Duplicate manifest.json
+
+RED; do not choose one arbitrarily.
+
+SEC-05
+
+canonical/File_Reference.txt in addition to the correct path
+
+RED due to potential collision across systems.
+
+SEC-06
+
+Symbolic entry pointing outside
+
+RED; do not follow link.
+
+SEC-07
+
+Encrypted ZIP
+
+RED; non-conformant profile.
+
+SEC-08
+
+Extreme compression ratio
+
+Abort before extraction; apply limits and diagnosis.
+
+SEC-09
+
+Internal source proyecto.zip
+
+Permitted; do not open it to verify the package.
+
+SEC-10
+
+source/café.bin with non-ASCII bytes and no UTF-8 indicator
+
+RED; path is not interoperable.
+
+SEC-11
+
+source/café.bin encoded as UTF-8 with the indicator set
+
+Permitted if all other rules are satisfied.
+
+45. Minimum interoperability tests
+
+Two generators produce the same logical structure and the same authoritative pieces for PKG-V01.
+
+Two verifiers emit the same four axes for all vectors.
+
+Derived copies are compared byte-for-byte, not by normalised equality.
+
+An incorrect manifest never corrects the integrated record.
+
+Safe repackaging does not invalidate the internal pieces.
+
+Hostile paths are rejected before writing to disk.
+
+Safe additional entries produce AMBER and are never silently ignored.
+
+Non-ASCII names without unambiguous UTF-8 signalling produce the same result in all verifiers.
+
+Legacy packages follow their previous flow and are not forced into 2.0.
+
+46. Closed questions for hostile review
+
+1. Is the choice of the integrated record as the authoritative artefact, rather than the derived copies, correct?
+
+2. Must absence of the integrated record always be package RED, even when separate descriptor and PTC would allow it to be reconstructed?
+
+3. Is the requirement for a single entry under source/ too strict or necessary to prevent ambiguity?
+
+4. Should canonical paths remain fixed, or should everything be resolved exclusively through manifest.json?
+
+5. Is treating unknown JSON keys as an incident rather than a failure sufficiently safe?
+
+6. Is byte-for-byte equality of derived copies properly delimited by R-01/PTC-F?
+
+7. Is it necessary to distinguish more precisely between a malicious package, a malformed package, and a package that cannot be processed due to local limits?
+
+8. Should an exact reproducible ZIP policy be fixed in 2.0 or remain a SHOULD?
+
+9. Do the reproducible recipe and physical ZIP of PKG-V01 allow the complete fixture to be checked without turning the outer hash into a normative requirement for all packages?
+
+10. Does the reference to disclosure-notice-v1 avoid invading its scope without leaving localisation gaps?
+
+ANNEX A · The box is not the proof
+
+This annex is informative. It summarises the difference between container integrity, authority of the pieces, and package conformance.
+
+A.1 Four different questions
+
+Layer
+
+Question
+
+External ZIP hash
+
+Is it exactly the same distribution container?
+
+PKG-02
+
+Does the box contain the expected, safe, and coherent pieces?
+
+FRS-01
+
+Does the supplied source exactly match the bound source?
+
+R-01/PTC-F
+
+Do the canonical object and declaration remain intact?
+
+A.2 Why a ZIP hash is not enough
+
+A single ZIP hash detects any outer change, but does not distinguish whether the source, the PTC, a README, a timestamp, or the compression method changed. Nor does it survive extraction and repackaging of the same pieces.
+
+A.3 Why redundancy is not an error
+
+The integrated record is self-contained. Separate copies facilitate reading, import, preservation, and diagnosis. Their redundancy adds utility provided the specification states which is authoritative and how to detect a divergence.
+
+A.4 Summary
+
+Essential difference
+
+PKG-02 does not turn the ZIP into a monolithic proof. It defines a governed box preserving an evidentiary structure capable of surviving repackaging and explaining exactly which piece matches, which is missing, and which contradicts the authority.
+
+47. Resolution of hostile review v0.1
+
+Claude Sonnet 5 confirmed the authority architecture and the four-axis model, but detected that PKG-V01 was not yet an executable vector: the declarative values and exact PTC serialisation were missing, and the physical ZIP was not distributed.
+
+The exact logical values of all fields determining the PTC are published.
+
+The complete ptc.txt and the exact rule for calculating hash_ptc_sha256 are published.
+
+The descriptor, manifest.json, and README.txt are published with their physical termination.
+
+The core pieces and fixture-specific auxiliary files are visually separated.
+
+The physical PKG-V01 ZIP is distributed with a deterministic recipe and informative outer hash.
+
+Absence of the integrated record remains package RED.
+
+No malicious intent is inferred from an isolated technical symptom.
+
+48. Resolution of the independent check on v0.2
+
+DeepSeek reviewed PKG-02 v0.2 in blank context. Claude Sonnet 5 checked its five observations against the actual text and determined that two justified changes, two were already resolved, and one was incorrect.
+
+An explicit coherence rule between public_notice and PUBLIC_NOTICE/ is incorporated.
+
+It is reinforced that the outer ZIP hash is not a conformance verdict and does not replace the internal hashes.
+
+The clarification that a source may itself be a ZIP is not repeated because it already appears literally in §13.
+
+No further general reference to disclosure-notice-v1 is added because PKG-02 already states that it only transports it.
+
+The informative character of media_type, already established in §21, is not modified.
+
+PKG-V01 and all its preimages, sizes, and fingerprints remain unchanged.
+
+49. Interoperability closure on v0.3
+
+DeepSeek recommended freezing PKG-02 v0.3 and noted two details it considered non-blocking. GPT-5.6 Thinking assessed that both affected the possibility of two implementations emitting different results, and Manuel Barrera Anglada authorised their normative closure in v0.4.
+
+The treatment of undeclared additional entries is defined: AMBER when they are safe and non-normative; RED when they are dangerous, ambiguous, or contradictory.
+
+Unambiguous interpretation of entry names as UTF-8 is required, as is activation of the UTF-8 indicator for non-ASCII names.
+
+Conformance states and vectors are added for both rules.
+
+The authority model, four-axis architecture, and physical PKG-V01 vector are unchanged; with these additions, no normative issue remains pending for implementation of format 2.0.
+
+50. Freezing criterion
+
+Criterion met
+
+PKG-02 v0.4 is technically frozen. The specification contains sufficient authority, structure, grammar, security, recovery, states, and vectors for two independent implementations to generate, locate, verify, reconstruct, and diagnose packages without interpreting the drafter's intent or collapsing the four result axes. Any subsequent normative change will require a new version.
+
+51. Traceability
+
+Function
+
+Responsible
+
+Final decision and responsibility
+
+Manuel Barrera Anglada
+
+Drafting and consolidation v0.4
+
+GPT-5.6 Thinking (OpenAI)
+
+Hostile reviews
+
+Claude Sonnet 5 (Anthropic) — v0.1 and v0.3 completed
+
+Independent checks
+
+DeepSeek — v0.2 and v0.3, findings cross-checked
+
+Status
+
+TECHNICALLY FROZEN
+
+Associated non-normative record
+
+2026-08-03_Registro_de_proceso_PKG-02_v0.2.docx

@@ -1,0 +1,1440 @@
+EL CANAL · VALIDATOR · SPÉCIFICATION TECHNIQUE
+
+PKG-02 v0.4
+
+Validator Package Format 2.0
+
+Transport, préservation et reconstruction d’une structure vérifiable
+
+Version techniquement gelée
+
+Titre
+
+PKG-02 — Validator Package Format 2.0
+
+Version
+
+v0.4 — techniquement gelée
+
+Date
+
+3 août 2026
+
+État
+
+TECHNIQUEMENT GELÉE ; base autorisée pour l’implémentation
+
+Décision et responsabilité finales
+
+Manuel Barrera Anglada
+
+Rédaction et consolidation
+
+GPT-5.6 Thinking (OpenAI)
+
+Révisions hostiles
+
+Claude Sonnet 5 (Anthropic) — v0.1 et v0.3 terminées
+
+Contrôles indépendants
+
+DeepSeek — v0.2 et v0.3 terminés et confrontés
+
+Base autorisée
+
+FRS-01 v0.3 gelée et Décisions architecturales v0.4 FINAL CERRADA
+
+Principe directeur
+
+Le paquet est un conteneur de transport, de préservation et de reconstruction. Il ne constitue pas à lui seul l’objet cryptographique protégé et ne remplace pas l’autorité du fichier source ni de l’objet canonique avec PTC.
+
+Plan du document
+
+PKG-02 définit quelles pièces voyagent ensemble, l’autorité de chacune, comment elles sont localisées, comment leur cohérence est vérifiée et ce qu’un vérificateur doit faire en présence de contradictions ou de risques.
+
+Partie
+
+Contenu
+
+I
+
+Objet, portée, références et modèle d’autorité.
+
+II
+
+Structure du ZIP, artefacts obligatoires et facultatifs.
+
+III
+
+manifest.json : grammaire, champs et routage.
+
+IV
+
+Génération, vérification, redondance et reconstruction.
+
+V
+
+Conformité du paquet comme axe séparé.
+
+VI
+
+Sécurité, limites opérationnelles et reproductibilité.
+
+VII
+
+Compatibilité, publication et reconditionnement.
+
+VIII
+
+Vecteurs d’interopérabilité, de contradiction et d’attaque.
+
+Annexe A
+
+Matrice d’autorité et réponse à l’objection du hachage unique.
+
+Invariant hérité
+
+Un objet canonique protégé, un PTC unique et les trois hachages normatifs. PKG-02 organise et transporte ces pièces ; il ne crée ni quatrième hachage ni verdict cryptographique global.
+
+PARTIE I · Portée et autorité
+
+1. Objet
+
+PKG-02 définit un format ZIP interopérable pour transporter une source exacte, sa référence FRS-01, un PTC, des copies dérivées, des métadonnées de routage et, facultativement, des matériaux de divulgation publique.
+
+La spécification vise à permettre à un tiers de localiser les pièces, de vérifier chaque axe séparément, de détecter les contradictions internes et de reconstruire les copies dérivées sans faire aveuglément confiance au manifeste.
+
+2. Portée
+
+Structure minimale et étendue du paquet 2.0.
+
+Rôles et hiérarchie d’autorité de chaque artefact.
+
+Grammaire et sémantique de manifest.json.
+
+Relations exactes entre le registre intégré et les copies dérivées.
+
+Génération, vérification et reconstruction.
+
+Conformité structurelle du paquet comme axe indépendant.
+
+Règles de sécurité pour les chemins, les entrées et les ressources ZIP.
+
+Compatibilité avec les paquets antérieurs et reconditionnement.
+
+Vecteurs d’interopérabilité, de contradiction et de traitement hostile.
+
+3. Hors du champ d’application
+
+Redéfinir R-01, PTC-F, ARCH ou FRS-01.
+
+Définir le contenu normatif de disclosure-notice-v1.
+
+Transformer le hachage du ZIP externe en racine cryptographique du système.
+
+Affirmer l’identité de l’opérateur, une priorité temporelle ou une validité juridique.
+
+Interpréter le contenu interne de la source.
+
+Garantir une extraction illimitée ou le traitement de fichiers de toute taille sur tout appareil.
+
+Imposer un service d’hébergement ou une URL publique.
+
+4. Références
+
+Référence
+
+Fonction
+
+R-01 v1.1
+
+Objet canonique, hachages et extraction bottom-anchored du PTC.
+
+PTC-F v1.2
+
+Forme canonique et sémantique du bloc PTC.
+
+ARCH v0.3
+
+Architecture générale, adaptateurs, paquets et états.
+
+FRS-01 v0.3
+
+Descripteur file-reference-sha256-v1 et vérification de la source exacte.
+
+Décisions v0.4 closes
+
+Structure prévue, avis facultatif et limites architecturales.
+
+5. Vocabulaire normatif
+
+DOIT et NE DOIT PAS expriment des exigences de conformité ; DEVRAIT et NE DEVRAIT PAS expriment des recommandations dont l’écart exige une justification ; PEUT exprime une option autorisée.
+
+6. Termes
+
+Terme
+
+Définition
+
+Source
+
+Fichier exact dont les octets sont identifiés au moyen de FRS-01.
+
+Registre intégré
+
+Objet canonique suivi du bloc PTC dans un artefact unique et autosuffisant.
+
+Copie dérivée
+
+Artefact extrait du registre intégré pour faciliter la lecture ou le traitement.
+
+Manifeste
+
+Carte JSON qui localise et décrit les pièces ; elle n’est pas une autorité cryptographique.
+
+Paquet complet
+
+ZIP 2.0 contenant toutes les entrées obligatoires et cohérentes.
+
+Paquet récupérable
+
+ZIP non conforme mais contenant suffisamment de pièces pour vérifier ou reconstruire le noyau.
+
+Incidence de paquet
+
+Défaut de structure ou de cohérence qui ne doit pas fusionner les axes PTC, source ou divulgation.
+
+Reconditionnement
+
+Création d’un autre ZIP avec les mêmes pièces pertinentes, éventuellement avec des octets externes différents.
+
+7. Modèle d’autorité
+
+Niveau
+
+Artefact
+
+Autorité
+
+A
+
+Fichier dans source_path
+
+Autorité sur ses propres octets ; comparé à FRS-01.
+
+A
+
+canonical/file_reference_with_ptc.txt
+
+Registre intégré principal et autosuffisant.
+
+B
+
+canonical/file_reference.txt
+
+Copie dérivée exacte du corps extrait du registre intégré.
+
+B
+
+ptc.txt
+
+Copie dérivée exacte du bloc PTC extrait.
+
+C
+
+manifest.json
+
+Route et décrit ; ne corrige ni ne remplace jamais A ou B.
+
+D
+
+README.txt et présentations
+
+Expliquent ou présentent ; ne créent aucune autorité cryptographique.
+
+Règle de prévalence
+
+Si manifest.json contredit le registre intégré ou la source, le manifeste est erroné. Si une copie dérivée contredit le registre intégré, la copie dérivée est erronée. La contradiction affecte la conformité du paquet, mais ne réécrit pas l’artefact faisant autorité.
+
+PARTIE II · Structure du paquet
+
+8. Profil et classe définis
+
+PKG-02 définit des paquets complets pour input_adapter égal à file-reference-sha256-v1. Un registre FRS séparé sans source peut rester utile conformément à FRS-01, mais ne constitue pas un paquet 2.0 complet.
+
+9. Structure minimale obligatoire
+
+manifest.json
+README.txt
+ptc.txt
+
+source/
+    <un seul fichier source>
+
+canonical/
+    file_reference.txt
+    file_reference_with_ptc.txt
+
+Les répertoires peuvent exister comme entrées explicites ou être implicites dans les chemins de fichiers. La conformité est déterminée par les entrées de fichiers, non par la présence d’entrées ZIP de répertoire.
+
+Un paquet 2.0 avec état VERT NE DOIT PAS contenir d’entrées de fichiers autres que les entrées obligatoires, celles déclarées au moyen de public_notice ou celles définies par une extension normative que le vérificateur reconnaît expressément.
+
+Une entrée supplémentaire sûre, non déclarée et sans fonction normative produit AMBRE sur l’axe du paquet et NE DOIT PAS être ignorée silencieusement.
+
+Une entrée supplémentaire dangereuse, ambiguë au regard des rôles réservés ou contradictoire avec un artefact faisant autorité produit ROUGE sur l’axe du paquet.
+
+10. Structure avec divulgation facultative
+
+manifest.json
+README.txt
+ptc.txt
+
+source/
+    <un seul fichier source>
+
+canonical/
+    file_reference.txt
+    file_reference_with_ptc.txt
+
+PUBLIC_NOTICE/
+    README.txt
+    notice.txt
+    notice.html
+    notice.svg
+    qr.svg                # uniquement si verification_url existe
+
+Le dossier PUBLIC_NOTICE/ n’apparaît que lorsque l’objet canonique contient un bloc PTC DISCLOSURE. Son contenu normatif et ses états sont régis par disclosure-notice-v1.
+
+11. Entrées obligatoires
+
+Entrée
+
+Obligation
+
+Fonction
+
+manifest.json
+
+DOIT
+
+Localisation, version, profil et métadonnées.
+
+README.txt
+
+DOIT
+
+Instructions humaines minimales.
+
+ptc.txt
+
+DOIT
+
+Copie dérivée du bloc PTC.
+
+source_path
+
+DOIT
+
+Source exacte unique transportée.
+
+canonical/file_reference.txt
+
+DOIT
+
+Copie dérivée de l’objet canonique FRS-01.
+
+canonical/file_reference_with_ptc.txt
+
+DOIT
+
+Registre intégré faisant autorité.
+
+12. Règles de chemins
+
+Tous les chemins internes DOIVENT utiliser / comme séparateur.
+
+Les noms de toutes les entrées DOIVENT pouvoir être décodés sans ambiguïté en UTF-8.
+
+Lorsqu’un nom contient des caractères non ASCII, l’indicateur UTF-8 du format ZIP (bit 11 du general purpose bit flag) DOIT être activé. Un nom non ASCII sans cet indicateur produit ROUGE sur l’axe du paquet.
+
+Les chemins normatifs réservés restent exclusivement en ASCII.
+
+Les chemins DOIVENT être relatifs et ne peuvent commencer par /, \\ ni une lettre de lecteur.
+
+Les segments vides, . et .. ne sont pas autorisés après normalisation des séparateurs.
+
+NUL et les caractères de contrôle U+0000–U+001F ou U+007F ne sont pas autorisés dans les noms d’entrée.
+
+Les chemins réservés manifest.json, README.txt, ptc.txt et canonical/ sont sensibles à la casse et DOIVENT apparaître exactement ainsi.
+
+Il ne peut exister plus d’une entrée produisant le même chemin normalisé.
+
+Les collisions ne différant que par la casse ne sont pas autorisées.
+
+Les liens symboliques, liens physiques et entrées redirigeant hors du ZIP ne sont pas autorisés.
+
+13. Règle de la source unique
+
+Un paquet 2.0 DOIT contenir exactement une entrée de fichier identifiée par source_path. Cette entrée DOIT être une descendante directe de source/ et ne peut être manifest.json, un artefact canonique ni un matériau de présentation.
+
+La source PEUT elle-même être un ZIP. Le ZIP interne est l’objet déclaré ; le ZIP externe n’est que le paquet de transport.
+
+14. Nom stocké et nom d’origine
+
+Le nom de l’entrée dans source/ peut conserver un nom sûr ou utiliser un nom assaini. original_filename conserve le nom de base déclaré par l’opérateur et ne fait pas partie de l’identité cryptographique.
+
+original_filename NE DOIT PAS contenir de séparateurs de chemin ni de caractères de contrôle.
+
+Un changement de nom sans changement des octets n’exige pas de régénérer le PTC.
+
+Un changement de source_path exige de mettre à jour manifest.json, mais ne modifie ni le descripteur ni ses hachages.
+
+PARTIE III · manifest.json
+
+15. Forme physique
+
+DOIT être un JSON valide encodé en UTF-8 sans BOM.
+
+DOIT contenir un objet JSON à la racine.
+
+Les commentaires, clés dupliquées et valeurs NaN/Infinity ne sont pas autorisés.
+
+Les chaînes de chemin utilisent / et doivent respecter la section 12.
+
+L’ordre des clés et l’indentation ne sont pas normatifs.
+
+Un générateur DEVRAIT émettre des LF et terminer le fichier par un seul LF pour la reproductibilité.
+
+16. Champs obligatoires
+
+Clé
+
+Type
+
+Valeur ou fonction
+
+package_format_version
+
+string
+
+Valeur exacte "2.0".
+
+input_adapter
+
+string
+
+Valeur exacte "file-reference-sha256-v1".
+
+source_path
+
+string
+
+Chemin de l’unique source.
+
+canonical_path
+
+string
+
+Chemin de la copie dérivée du descripteur.
+
+canonical_with_ptc_path
+
+string
+
+Chemin du registre intégré.
+
+ptc_path
+
+string
+
+Chemin de la copie dérivée du PTC.
+
+readme_path
+
+string
+
+Chemin du README principal.
+
+original_filename
+
+string
+
+Nom de base informatif de la source.
+
+media_type
+
+string
+
+MIME informatif ; application/octet-stream s’il est inconnu.
+
+17. Valeurs de chemin obligatoires en v2.0
+
+Clé
+
+Valeur exacte
+
+canonical_path
+
+canonical/file_reference.txt
+
+canonical_with_ptc_path
+
+canonical/file_reference_with_ptc.txt
+
+ptc_path
+
+ptc.txt
+
+readme_path
+
+README.txt
+
+source_path est variable car il conserve ou assainit le nom de la source. Les autres valeurs sont gelées afin qu’un paquet puisse être récupéré même lorsque le manifeste est endommagé.
+
+18. Exemple minimal
+
+{
+  "package_format_version": "2.0",
+  "input_adapter": "file-reference-sha256-v1",
+  "source_path": "source/contenu_original.ext",
+  "canonical_path": "canonical/file_reference.txt",
+  "canonical_with_ptc_path": "canonical/file_reference_with_ptc.txt",
+  "ptc_path": "ptc.txt",
+  "readme_path": "README.txt",
+  "original_filename": "contenu_original.ext",
+  "media_type": "application/octet-stream"
+}
+
+19. Objet public_notice
+
+Lorsqu’une divulgation existe, manifest.json DOIT inclure public_notice. La clé utilise snake_case et n’est pas le nom littéral du dossier PUBLIC_NOTICE/.
+
+{
+  "public_notice": {
+    "profile": "disclosure-notice-v1",
+    "readme_path": "PUBLIC_NOTICE/README.txt",
+    "notice_path": "PUBLIC_NOTICE/notice.txt",
+    "html_path": "PUBLIC_NOTICE/notice.html",
+    "svg_path": "PUBLIC_NOTICE/notice.svg",
+    "qr_path": "PUBLIC_NOTICE/qr.svg",
+    "verification_url": "https://exemple.org/declaration"
+  }
+}
+
+public_notice DOIT être entièrement omis lorsqu’il n’existe aucune divulgation.
+
+profile DOIT être disclosure-notice-v1.
+
+readme_path, notice_path, html_path et svg_path DOIVENT être présents.
+
+qr_path et verification_url apparaissent conjointement ou sont omis conjointement.
+
+verification_url DOIT respecter les règles de disclosure-notice-v1 ; PKG-02 ne fait que la transporter.
+
+La présence de public_notice dans manifest.json et celle de PUBLIC_NOTICE/ dans le ZIP DOIVENT être cohérentes. Leur divergence constitue une incidence de paquet et NE DOIT PAS, à elle seule, modifier les résultats indépendants de la déclaration PTC ou de la source.
+
+20. Clés inconnues
+
+Une clé inconnue ne modifie ni le PTC ni la source. Un vérificateur DOIT l’ignorer pour la vérification cryptographique, mais DEVRAIT signaler une incidence de paquet afin d’éviter qu’une faute de frappe passe inaperçue.
+
+21. Le manifeste n’est pas la source de vérité
+
+Le vérificateur utilise manifest.json pour router le processus puis confirme chaque affirmation contre les pièces réelles. input_adapter ne transforme pas un texte arbitraire en FRS-01 ; source_path ne modifie pas les octets déclarés ; original_filename ou media_type ne modifient pas l’identité.
+
+PARTIE IV · Génération, vérification et reconstruction
+
+22. Algorithme de génération
+
+1. Figer la version finale du fichier source.
+
+2. Calculer la taille et source_sha256 conformément à FRS-01.
+
+3. Générer file_reference.txt conformément à FRS-01.
+
+4. Générer le PTC conformément à R-01 et PTC-F.
+
+5. Construire file_reference_with_ptc.txt en concaténant l’objet canonique et le bloc PTC selon R-01.
+
+6. Extraire du registre intégré le corps et le bloc PTC pour produire les deux copies dérivées.
+
+7. Copier la source sans modification vers source_path.
+
+8. Générer manifest.json avec les chemins réels et les métadonnées informatives.
+
+9. Générer README.txt.
+
+10. S’il existe une divulgation, générer les matériaux et public_notice conformément à sa spécification.
+
+11. Créer le ZIP sans chiffrement et appliquer les règles de sécurité et de reproductibilité.
+
+Source stable pendant le processus
+
+L’implémentation DOIT détecter, lorsque l’environnement le permet, si la source change entre le calcul de son empreinte et son incorporation au ZIP. En cas de divergence, elle doit interrompre le processus et recommencer.
+
+23. Algorithme de vérification
+
+1. Inspecter le répertoire central du ZIP avant extraction et appliquer les limites de sécurité.
+
+2. Normaliser et valider tous les chemins ; rejeter les entrées dangereuses ou ambiguës.
+
+3. Localiser manifest.json et vérifier sa forme.
+
+4. Localiser le registre intégré par son chemin fixe et extraire le corps et le PTC selon R-01.
+
+5. Vérifier le PTC et l’objet canonique conformément à R-01/PTC-F.
+
+6. Confirmer que le corps respecte FRS-01 et que input_adapter est cohérent.
+
+7. Comparer exactement le corps extrait avec canonical/file_reference.txt.
+
+8. Comparer exactement le bloc extrait avec ptc.txt.
+
+9. Localiser source_path et vérifier la taille et source_sha256 conformément à FRS-01.
+
+10. Vérifier que tous les chemins déclarés existent et pointent vers le type d’artefact attendu.
+
+11. Si public_notice existe, déléguer sa vérification à disclosure-notice-v1.
+
+12. Émettre des résultats séparés pour le PTC, la source, le paquet et la divulgation.
+
+24. Égalité des copies dérivées
+
+extract_body(canonical/file_reference_with_ptc.txt)
+    == bytes(canonical/file_reference.txt)
+
+extract_ptc(canonical/file_reference_with_ptc.txt)
+    == bytes(ptc.txt)
+
+L’égalité est octet par octet. Les copies dérivées ne sont pas renormalisées afin de masquer des divergences physiques. Le registre intégré contient déjà les formes canoniques applicables.
+
+25. Reconstruction
+
+Situation
+
+Action autorisée
+
+file_reference.txt absent
+
+Le reconstruire en extrayant le corps du registre intégré ; paquet non conforme mais récupérable.
+
+ptc.txt absent
+
+Le reconstruire en extrayant le bloc PTC ; paquet non conforme mais récupérable.
+
+README.txt absent
+
+N’affecte pas la cryptographie ; paquet non conforme mais récupérable.
+
+manifest.json absent
+
+Utiliser les chemins fixes pour récupérer le noyau ; source_path peut nécessiter une intervention humaine.
+
+Registre intégré absent
+
+Ne pas le reconstruire silencieusement comme autorité ; utiliser les pièces séparées uniquement comme registre FRS séparé.
+
+Source absente
+
+PTC vérifiable ; source non contrôlée ; ce n’est pas un paquet complet.
+
+26. Contradictions internes
+
+Contradiction
+
+Autorité qui prévaut
+
+Effet
+
+Le manifeste pointe vers un autre chemin canonique
+
+Chemin fixe et registre intégré
+
+Paquet non conforme ; manifeste incorrect.
+
+file_reference.txt diffère du corps intégré
+
+Registre intégré
+
+Paquet ROUGE ; le PTC est vérifié contre l’intégré.
+
+ptc.txt diffère du PTC intégré
+
+Registre intégré
+
+Paquet ROUGE ; copie dérivée incorrecte.
+
+La source correspond à la copie dérivée mais pas au corps intégré
+
+Registre intégré
+
+Source ROUGE pour l’objet protégé.
+
+media_type contredit l’extension ou le contenu
+
+Aucun n’est une identité
+
+Incidence informative de paquet.
+
+Deux manifest.json
+
+Aucun
+
+Paquet non sûr/non traitable.
+
+PARTIE V · Conformité du paquet comme axe séparé
+
+27. Interdiction d’un verdict global fusionné
+
+Les résultats DOIVENT être affichés dans des blocs indépendants. La conformité du paquet NE DOIT PAS écraser l’état du PTC, de la source ou de la divulgation et NE DOIT PAS être combinée au moyen d’une règle du type « le pire prévaut ».
+
+Déclaration PTC :       VERT / ROUGE
+Fichier source :        VERT / AMBRE / ROUGE
+Structure du paquet :   VERT / AMBRE / ROUGE
+Divulgation publique :  VERT / AMBRE / ROUGE   # lorsqu’elle existe
+
+28. États de l’axe paquet
+
+État
+
+Condition
+
+Message minimal
+
+VERT
+
+Entrées obligatoires présentes, chemins sûrs, manifeste conforme et copies cohérentes.
+
+Le paquet 2.0 est structurellement conforme.
+
+AMBRE
+
+Défaut récupérable : une copie dérivée, le README ou le manifeste manque ; le noyau peut être localisé ou reconstruit.
+
+Le paquet présente des incidences, mais conserve des éléments vérifiables.
+
+AMBRE
+
+L’appareil rejette, en raison de limites locales, un paquet qui ne présente pas en lui-même d’infraction structurelle.
+
+Le traitement complet n’a pas pu être effectué sur cet appareil.
+
+ROUGE
+
+Contradiction entre registre intégré et copies dérivées.
+
+Le paquet contient des représentations incompatibles.
+
+ROUGE
+
+Chemins dangereux, dupliqués ou ambigus, chiffrement ou manifestes multiples.
+
+Le paquet ne peut pas être traité en toute sécurité.
+
+ROUGE
+
+Le registre intégré faisant autorité est absent.
+
+Ce n’est pas un paquet 2.0 complet ; un registre séparé peut exister.
+
+AMBRE
+
+Une entrée supplémentaire sûre, non déclarée et sans fonction normative existe.
+
+Le paquet contient du matériel supplémentaire non reconnu ; les autres axes restent séparés.
+
+ROUGE
+
+Une entrée supplémentaire dangereuse, ambiguë au regard des rôles réservés ou contradictoire existe.
+
+Le paquet contient du matériel empêchant une interprétation structurelle sûre.
+
+ROUGE
+
+Un nom non ASCII n’est pas marqué sans ambiguïté comme UTF-8.
+
+Le chemin ne peut pas être interprété de manière interopérable.
+
+Exemple d’asymétrie
+
+Un paquet peut être ROUGE parce que ptc.txt contredit le registre intégré, tandis que la déclaration PTC extraite du registre intégré reste VERTE. L’utilisateur doit voir les deux informations, et non un seul voyant rouge.
+
+29. Conformité et récupérabilité
+
+VERT signifie conformité complète. AMBRE signifie que le ZIP ne satisfait pas toutes les exigences, mais conserve une structure suffisante pour une vérification partielle ou une reconstruction explicite. ROUGE signifie contradiction grave, absence de l’artefact faisant autorité ou risque de traitement.
+
+PARTIE VI · Sécurité et reproductibilité
+
+30. Inspection avant extraction
+
+Le vérificateur DOIT lire les métadonnées ZIP avant d’écrire des fichiers sur disque.
+
+DOIT rejeter les chemins absolus, traversal, liens et doublons normalisés.
+
+DOIT empêcher qu’une entrée en écrase une autre ou qu’un fichier local existant hors de la zone temporaire soit écrasé.
+
+NE DOIT PAS exécuter, prévisualiser activement ni décompresser la source interne du seul fait de vérifier le paquet.
+
+DOIT traiter la source comme des octets opaques, même lorsqu’il s’agit d’un autre ZIP.
+
+31. Chiffrement, signatures et extensions ZIP
+
+Le paquet 2.0 NE DOIT PAS être chiffré ni protégé par mot de passe.
+
+NE DOIT PAS dépendre de volumes multiples.
+
+PEUT utiliser ZIP64 lorsque la taille l’exige et que l’implémentation le prend en charge.
+
+Les champs supplémentaires ZIP et les horodatages ne font pas partie de l’autorité cryptographique.
+
+Une signature externe du ZIP peut coexister, mais reste hors du champ de PKG-02.
+
+32. Limites de ressources
+
+Chaque implémentation DOIT appliquer des limites configurables au nombre d’entrées, à la taille totale non compressée, à la taille par entrée, au taux de compression, au temps et à la mémoire. Le dépassement d’une limite locale ne démontre pas à lui seul que le paquet est malveillant.
+
+Cas
+
+Résultat
+
+Limite locale dépassée sans caractéristique structurelle interdite
+
+AMBRE — non entièrement traitable sur cet appareil.
+
+Tailles ZIP impossibles ou métadonnées incohérentes
+
+ROUGE — paquet malformé ou non sûr.
+
+Taux de compression extrême
+
+Interrompre avant extraction ; classer selon la politique et les éléments disponibles.
+
+Source très volumineuse mais stockée sans compression
+
+Peut être vérifiée par lecture incrémentale si l’implémentation le permet.
+
+33. Reproductibilité du ZIP
+
+Le hachage du ZIP externe n’est pas normatif. Néanmoins, un générateur DEVRAIT favoriser des paquets reproductibles :
+
+Le hachage externe du ZIP NE DOIT PAS être utilisé comme verdict de conformité du paquet ni comme substitut de source_sha256 ou des hachages internes du PTC.
+
+ordre stable des entrées ;
+
+chemins et encodage UTF-8 stables ;
+
+horodatages contrôlés ou documentés ;
+
+politique de compression stable ;
+
+absence de données supplémentaires dépendantes de l’appareil lorsqu’elles ne sont pas nécessaires.
+
+Deux ZIP différents peuvent être des paquets équivalents s’ils contiennent les mêmes pièces faisant autorité et des copies dérivées cohérentes.
+
+34. Modification de la source pendant l’empaquetage
+
+Lorsque cela est possible, le générateur DEVRAIT obtenir la source à partir d’un instantané stable ou vérifier la taille, l’identifiant de fichier et la date avant et après sa lecture. S’il détecte un changement, il NE DOIT PAS émettre le paquet.
+
+PARTIE VII · Compatibilité, publication et reconditionnement
+
+35. Paquets antérieurs
+
+Un Validator récent DOIT continuer à générer et vérifier les paquets antérieurs sans exiger package_format_version 2.0. L’absence de ce champ active le flux hérité ; elle n’est pas interprétée comme un paquet 2.0 défectueux.
+
+36. Paquets 2.0 dans des validateurs anciens
+
+Un ancien validateur peut ne pas reconnaître manifest.json, FRS-01 ou PUBLIC_NOTICE/. Il n’existe aucune garantie de compatibilité fonctionnelle descendante. Les pièces TXT restent lisibles et préservables.
+
+37. Reconditionnement
+
+Extraire puis recréer le ZIP n’invalide pas automatiquement la déclaration, la source ni l’avis. Le nouveau conteneur doit être réévalué comme paquet ; ses axes internes sont vérifiés indépendamment.
+
+38. Hachage externe du ZIP
+
+Un dépôt PEUT publier SHA-256, MD5 ou une autre somme du ZIP comme contrôle de téléchargement. Cette valeur concerne l’identité du conteneur et ne remplace ni source_sha256 ni les hachages du PTC.
+
+39. Publication et URL
+
+PKG-02 n’héberge pas le paquet et ne génère pas d’URL publique. Lorsqu’une verification_url existe, elle peut déjà être active ou être une adresse persistante réservée qui commencera à se résoudre après publication. Sa disponibilité est informative et ne modifie pas les hachages.
+
+PARTIE VIII · Vecteurs d’interopérabilité
+
+40. Vecteur PKG-V01 — paquet minimal avec source ABC
+
+PKG-V01 est un fixture physique exécutable. Tous ses fichiers, préimages, octets et empreintes sont publiés ci-dessous et sont également distribués dans le ZIP compagnon PKG-V01_Validator_Package_Format_2.0_vector.zip.
+
+Portée du vecteur
+
+Les six empreintes d’entrée sont reproductibles et vérifiables. Les empreintes de manifest.json et README.txt ne figent que les octets de ce fixture : elles ne transforment pas leurs textes en modèles universels ni en autorité cryptographique.
+
+40.1 Source et descripteur exacts
+
+La source contient exactement les octets hexadécimaux 41 42 43, équivalents à ASCII ABC.
+
+PTC FILE REFERENCE
+profile: file-reference-sha256-v1
+size_bytes: 3
+source_sha256: b5d4045c3f466fa91fe2cc6abe79232a1a57cdf104f7a26e716e0a1e2789df78
+
+file_reference.txt se termine par exactement un LF. Sa taille est de 147 octets et son SHA-256 est 9002d57a5b85179359b3cd77b3845ac7b7ffaa0f21b9b21bb0490e377e721540.
+
+40.2 Valeurs déclaratives exactes du PTC
+
+Champ
+
+Valeur logique exacte
+
+version
+
+R-01
+
+level
+
+standard
+
+operator
+
+Manuel Barrera Anglada
+
+date_utc
+
+2026-08-03T00:00:00Z
+
+ai_system
+
+GPT-5.6 Thinking (OpenAI)
+
+co_creation_mode
+
+human-ai dialogue and deterministic fixture generation
+
+human_review
+
+full
+
+purpose
+
+Executable conformance vector PKG-V01 for PKG-02 package format 2.0.
+
+hash_scope
+
+document_without_ptc_normalized
+
+orcid
+
+0009-0000-8891-7021
+
+La préimage éthique exacte est formée en joignant les huit premières valeurs contextuelles avec U+007C. hash_ethical_context_sha256 = da890ee5fa5b5d9b93b16626be9da95e837f9d00c56187c8953a8bf0dea75b29.
+
+40.3 ptc.txt exact
+
+<PTC>
+version: R-01
+level: standard
+operator: Manuel Barrera Anglada
+date_utc: 2026-08-03T00:00:00Z
+ai_system: GPT-5.6 Thinking (OpenAI)
+co_creation_mode: human-ai dialogue and deterministic fixture generation
+human_review: full
+purpose: Executable conformance vector PKG-V01 for PKG-02 package format 2.0.
+hash_scope: document_without_ptc_normalized
+hash_doc_sha256: 9002d57a5b85179359b3cd77b3845ac7b7ffaa0f21b9b21bb0490e377e721540
+hash_ptc_sha256: aa7801011631dd5aac902544f0d103480d6e7b6c837a52cb993019af11d4f1f4
+hash_ethical_context_sha256: da890ee5fa5b5d9b93b16626be9da95e837f9d00c56187c8953a8bf0dea75b29
+orcid: 0009-0000-8891-7021
+</PTC>
+
+Pour calculer hash_ptc_sha256, ce même bloc est utilisé sans la ligne hash_ptc_sha256, terminé par le caractère > de </PTC> et sans LF final. Le résultat est aa7801011631dd5aac902544f0d103480d6e7b6c837a52cb993019af11d4f1f4.
+
+40.4 Registre intégré
+
+canonical/file_reference_with_ptc.txt est obtenu en concaténant, sans séparateur supplémentaire, les 147 octets de file_reference.txt et les octets de ptc.txt. Le LF final du descripteur est le séparateur physique immédiatement avant <PTC>.
+
+40.5 manifest.json exact
+
+{
+  "package_format_version": "2.0",
+  "input_adapter": "file-reference-sha256-v1",
+  "source_path": "source/ABC.bin",
+  "canonical_path": "canonical/file_reference.txt",
+  "canonical_with_ptc_path": "canonical/file_reference_with_ptc.txt",
+  "ptc_path": "ptc.txt",
+  "readme_path": "README.txt",
+  "original_filename": "ABC.bin",
+  "media_type": "application/octet-stream"
+}
+
+Le fichier manifest.json se termine par exactement un LF. Sans ce LF, sa taille est de 375 octets ; le fixture publié contient 376 octets.
+
+40.6 README.txt exact
+
+PKG-V01 - Validator Package Format 2.0 conformance vector
+
+This package is an executable fixture for PKG-02.
+Verify the integrated record first, then compare the derived copies and source/ABC.bin.
+The outer ZIP hash is informative and is not a normative root of trust.
+
+README.txt se termine par exactement un LF.
+
+40.7 Empreintes reproductibles des entrées
+
+Entrée
+
+Octets
+
+SHA-256
+
+Fonction
+
+source/ABC.bin
+
+3
+
+b5d4045c3f466fa91fe2cc6abe79232a1a57cdf104f7a26e716e0a1e2789df78
+
+Source faisant autorité
+
+canonical/file_reference.txt
+
+147
+
+9002d57a5b85179359b3cd77b3845ac7b7ffaa0f21b9b21bb0490e377e721540
+
+Objet canonique dérivé
+
+ptc.txt
+
+642
+
+223f34140a2693b32f0195a52ae7b62d3bb72773767fec533b59697c98b493aa
+
+Copie dérivée exécutable
+
+canonical/file_reference_with_ptc.txt
+
+789
+
+68af623e45401576bf31bdf6d4f1a68c94d222064a79bddc9f3e12c5017b3410
+
+Registre intégré faisant autorité
+
+Fichier auxiliaire
+
+Octets
+
+SHA-256
+
+Portée
+
+manifest.json
+
+376
+
+1a867888776bfabf479fa91e86cd53f9007c1ea24e9085fe97826ebcbef28ef4
+
+Fixture exécutable ; pas un modèle universel
+
+README.txt
+
+269
+
+41ce0ca8ad7a893ead9090a6ccff4fe5a9f9d5d06a7a804168b3d0307a11c164
+
+Fixture exécutable ; pas un modèle universel
+
+40.8 ZIP physique et recette reproductible
+
+Propriété
+
+Valeur exacte du fixture
+
+Nom
+
+PKG-V01_Validator_Package_Format_2.0_vector.zip
+
+Entrées et ordre
+
+manifest.json; README.txt; ptc.txt; source/ABC.bin; canonical/file_reference.txt; canonical/file_reference_with_ptc.txt
+
+Compression
+
+ZIP_STORED, sans compression
+
+Date de chaque entrée
+
+1980-01-01T00:00:00, valeur minimale ZIP
+
+Mode
+
+fichier régulier 0644 ; create_system = 3
+
+Champs supplémentaires et commentaire
+
+vides
+
+Taille externe
+
+2922 octets
+
+SHA-256 externe
+
+ec50789755f55fe798ae412136a9adede87b77e3cd72fe7f6e94893cf0ac8cef
+
+Le hachage externe reste informatif
+
+La recette permet de reproduire exactement le ZIP physique du fixture et d’en vérifier la distribution. Ce hachage ne devient pas pour autant une racine normative : un reconditionnement différent peut préserver intégralement le PTC, la source et les relations internes.
+
+41. Vecteur PKG-V02 — reconditionnement équivalent
+
+Créer deux ZIP avec les six entrées de PKG-V01, mais avec un ordre, une compression ou des horodatages différents. Résultat attendu : les hachages externes peuvent différer ; le PTC, la source et la cohérence interne restent VERTS ; le paquet est VERT si les deux respectent les règles structurelles.
+
+42. Vecteurs de récupération
+
+ID
+
+Mutation
+
+Paquet
+
+Autres axes
+
+REC-01
+
+Supprimer README.txt
+
+AMBRE
+
+PTC et source peuvent rester VERTS.
+
+REC-02
+
+Supprimer file_reference.txt
+
+AMBRE
+
+Reconstruit à partir de l’intégré.
+
+REC-03
+
+Supprimer ptc.txt
+
+AMBRE
+
+Reconstruit à partir de l’intégré.
+
+REC-04
+
+Supprimer manifest.json
+
+AMBRE
+
+Noyau par chemins fixes ; la source peut nécessiter une sélection.
+
+REC-05
+
+Supprimer la source
+
+AMBRE
+
+PTC VERT ; source AMBRE.
+
+REC-06
+
+Supprimer le registre intégré
+
+ROUGE
+
+Les pièces séparées peuvent être traitées comme registre FRS, non comme paquet complet.
+
+43. Vecteurs de contradiction et entrées supplémentaires
+
+ID
+
+Mutation
+
+Résultat attendu
+
+CON-01
+
+Modifier un octet de file_reference.txt, intégré intact
+
+Paquet ROUGE ; PTC et source sont vérifiés contre l’intégré.
+
+CON-02
+
+Modifier ptc.txt, intégré intact
+
+Paquet ROUGE ; le PTC intégré conserve son propre résultat.
+
+CON-03
+
+Le manifeste pointe vers canonical/otro.txt
+
+Paquet ROUGE ou AMBRE récupérable selon la localisation fixe ; le manifeste ne prévaut pas.
+
+CON-04
+
+source_path pointe vers le registre intégré
+
+Paquet ROUGE ; rôle de source invalide.
+
+CON-05
+
+Deux sources sous source/, une seule déclarée
+
+Paquet ROUGE pour ambiguïté et contenu non autorisé.
+
+CON-06
+
+media_type erroné
+
+Incidence ; ne modifie ni la source ni le PTC.
+
+ADD-01
+
+Ajouter notes.txt sûr, non déclaré et sans fonction normative
+
+Paquet AMBRE ; PTC, source et divulgation ne changent pas à eux seuls.
+
+ADD-02
+
+Ajouter canonical/alternate.txt non déclaré
+
+Paquet ROUGE pour ambiguïté de rôle ; ne pas le traiter comme autorité.
+
+44. Vecteurs hostiles
+
+ID
+
+Entrée ou condition
+
+Résultat attendu
+
+SEC-01
+
+../manifest.json
+
+ROUGE ; ne pas extraire.
+
+SEC-02
+
+/absolute/source.bin
+
+ROUGE ; ne pas extraire.
+
+SEC-03
+
+C:\source\file.bin
+
+ROUGE ; ne pas extraire.
+
+SEC-04
+
+manifest.json dupliqué
+
+ROUGE ; ne pas en choisir un arbitrairement.
+
+SEC-05
+
+canonical/File_Reference.txt en plus du chemin correct
+
+ROUGE en raison d’une collision potentielle entre systèmes.
+
+SEC-06
+
+Entrée symbolique pointant vers l’extérieur
+
+ROUGE ; ne pas suivre le lien.
+
+SEC-07
+
+ZIP chiffré
+
+ROUGE ; profil non conforme.
+
+SEC-08
+
+Taux de compression extrême
+
+Interrompre avant extraction ; appliquer les limites et le diagnostic.
+
+SEC-09
+
+Source interne proyecto.zip
+
+Autorisé ; ne pas l’ouvrir pour vérifier le paquet.
+
+SEC-10
+
+source/café.bin avec octets non ASCII et sans indicateur UTF-8
+
+ROUGE ; le chemin n’est pas interopérable.
+
+SEC-11
+
+source/café.bin encodé en UTF-8 avec l’indicateur activé
+
+Autorisé s’il respecte toutes les autres règles.
+
+45. Tests minimaux d’interopérabilité
+
+Deux générateurs produisent la même structure logique et les mêmes pièces faisant autorité pour PKG-V01.
+
+Deux vérificateurs émettent les mêmes quatre axes pour tous les vecteurs.
+
+Les copies dérivées sont comparées octet par octet, non par égalité normalisée.
+
+Un manifeste incorrect ne corrige jamais le registre intégré.
+
+Un reconditionnement sûr n’invalide pas les pièces internes.
+
+Les chemins hostiles sont rejetés avant toute écriture sur disque.
+
+Les entrées supplémentaires sûres produisent AMBRE et ne sont jamais ignorées silencieusement.
+
+Les noms non ASCII sans signalisation UTF-8 non ambiguë produisent le même résultat dans tous les vérificateurs.
+
+Les paquets hérités suivent leur flux antérieur et ne sont pas forcés en 2.0.
+
+46. Questions closes pour révision hostile
+
+1. Le choix du registre intégré comme artefact faisant autorité face aux copies dérivées est-il correct ?
+
+2. L’absence du registre intégré doit-elle toujours produire ROUGE pour le paquet, même si le descripteur et le PTC séparés permettent de le reconstruire ?
+
+3. L’obligation d’une seule entrée sous source/ est-elle trop stricte ou nécessaire pour empêcher l’ambiguïté ?
+
+4. Les chemins canoniques doivent-ils rester fixes ou tout devrait-il être résolu exclusivement par manifest.json ?
+
+5. Le traitement des clés JSON inconnues comme incidence plutôt que comme erreur est-il suffisamment sûr ?
+
+6. L’égalité octet par octet des copies dérivées est-elle correctement délimitée par R-01/PTC-F ?
+
+7. Faut-il distinguer plus précisément paquet malveillant, paquet malformé et paquet non traitable en raison de limites locales ?
+
+8. Une politique ZIP reproductible exacte doit-elle être imposée en 2.0 ou rester au niveau DEVRAIT ?
+
+9. La recette reproductible et le ZIP physique de PKG-V01 permettent-ils de vérifier le fixture complet sans faire du hachage externe une obligation normative pour tous les paquets ?
+
+10. Le renvoi à disclosure-notice-v1 évite-t-il d’empiéter sur son domaine sans laisser de lacunes de localisation ?
+
+ANNEXE A · La boîte n’est pas la preuve
+
+Cette annexe est informative. Elle résume la différence entre intégrité du conteneur, autorité des pièces et conformité du paquet.
+
+A.1 Quatre questions différentes
+
+Couche
+
+Question
+
+Hachage externe du ZIP
+
+S’agit-il exactement du même conteneur de distribution ?
+
+PKG-02
+
+La boîte contient-elle les pièces attendues, sûres et cohérentes ?
+
+FRS-01
+
+La source fournie correspond-elle exactement à la source liée ?
+
+R-01/PTC-F
+
+L’objet canonique et la déclaration restent-ils intègres ?
+
+A.2 Pourquoi un hachage du ZIP ne suffit pas
+
+Un seul hachage du ZIP détecte tout changement externe, mais ne distingue pas si la source, le PTC, un README, un horodatage ou la méthode de compression a changé. Il ne survit pas non plus à l’extraction puis au reconditionnement des mêmes pièces.
+
+A.3 Pourquoi la redondance n’est pas une erreur
+
+Le registre intégré est autosuffisant. Les copies séparées facilitent la lecture, l’importation, la préservation et le diagnostic. Leur redondance apporte une utilité dès lors que la spécification indique laquelle fait autorité et comment détecter une divergence.
+
+A.4 Synthèse
+
+Différence essentielle
+
+PKG-02 ne transforme pas le ZIP en preuve monolithique. Il définit une boîte gouvernée qui préserve une structure probatoire capable de survivre au reconditionnement et d’expliquer exactement quelle pièce correspond, laquelle manque et laquelle contredit l’autorité.
+
+47. Résolution de la révision hostile v0.1
+
+Claude Sonnet 5 a confirmé l’architecture d’autorité et des quatre axes, mais a détecté que PKG-V01 n’était pas encore un vecteur exécutable : les valeurs déclaratives et la sérialisation exacte du PTC manquaient, et le ZIP physique n’était pas distribué.
+
+Les valeurs logiques exactes de tous les champs qui déterminent le PTC sont publiées.
+
+ptc.txt complet et la règle exacte de calcul de hash_ptc_sha256 sont publiés.
+
+Le descripteur, manifest.json et README.txt sont publiés avec leur terminaison physique.
+
+Les pièces du noyau et les fichiers auxiliaires spécifiques au fixture sont séparés visuellement.
+
+Le ZIP physique PKG-V01 est distribué avec une recette déterministe et un hachage externe informatif.
+
+L’absence du registre intégré reste ROUGE pour le paquet.
+
+Aucune intention malveillante n’est déduite d’un symptôme technique isolé.
+
+48. Résolution du contrôle indépendant sur v0.2
+
+DeepSeek a examiné PKG-02 v0.2 sans contexte préalable. Claude Sonnet 5 a confronté ses cinq observations au texte réel et a déterminé que deux justifiaient des modifications, que deux étaient déjà résolues et qu’une était incorrecte.
+
+Une règle explicite de cohérence entre public_notice et PUBLIC_NOTICE/ est ajoutée.
+
+Il est renforcé que le hachage externe du ZIP n’est pas un verdict de conformité et ne remplace pas les hachages internes.
+
+L’explication concernant une source qui est elle-même un ZIP n’est pas répétée, car elle figure déjà littéralement au §13.
+
+Aucun autre renvoi général à disclosure-notice-v1 n’est ajouté, car PKG-02 indique déjà qu’il ne fait que la transporter.
+
+Le caractère informatif de media_type n’est pas modifié, puisqu’il est déjà établi au §21.
+
+PKG-V01 et toutes ses préimages, tailles et empreintes restent inchangés.
+
+49. Clôture d’interopérabilité sur v0.3
+
+DeepSeek a recommandé de geler PKG-02 v0.3 et a signalé deux détails qu’il considérait non bloquants. GPT-5.6 Thinking a estimé que les deux pouvaient conduire deux implémentations à produire des résultats différents, et Manuel Barrera Anglada a autorisé leur clôture normative en v0.4.
+
+Le traitement des entrées supplémentaires non déclarées est défini : AMBRE lorsqu’elles sont sûres et non normatives ; ROUGE lorsqu’elles sont dangereuses, ambiguës ou contradictoires.
+
+Une interprétation non ambiguë des noms d’entrée comme UTF-8 est exigée, ainsi que l’activation de l’indicateur UTF-8 pour les noms non ASCII.
+
+Des états et des vecteurs de conformité sont ajoutés pour les deux règles.
+
+Le modèle d’autorité, l’architecture à quatre axes et le vecteur physique PKG-V01 ne sont pas modifiés ; avec ces ajouts, aucune question normative ne reste en suspens pour l’implémentation du format 2.0.
+
+50. Critère de gel
+
+Critère rempli
+
+PKG-02 v0.4 est techniquement gelé. La spécification contient suffisamment d’autorité, de structure, de grammaire, de sécurité, de récupération, d’états et de vecteurs pour que deux implémentations indépendantes puissent générer, localiser, vérifier, reconstruire et diagnostiquer des paquets sans interpréter l’intention du rédacteur ni fusionner les quatre axes de résultat. Toute modification normative ultérieure exigera une nouvelle version.
+
+51. Traçabilité
+
+Fonction
+
+Responsable
+
+Décision et responsabilité finales
+
+Manuel Barrera Anglada
+
+Rédaction et consolidation v0.4
+
+GPT-5.6 Thinking (OpenAI)
+
+Révisions hostiles
+
+Claude Sonnet 5 (Anthropic) — v0.1 et v0.3 terminées
+
+Contrôles indépendants
+
+DeepSeek — v0.2 et v0.3, constats confrontés
+
+État
+
+TECHNIQUEMENT GELÉE
+
+Registre non normatif associé
+
+2026-08-03_Registro_de_proceso_PKG-02_v0.2.docx
