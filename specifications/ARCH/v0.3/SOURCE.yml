@@ -1,0 +1,11 @@
+id: ARCH
+version: v0.3
+doi: 10.5281/zenodo.21406665
+archival_authority: Zenodo
+license: CC-BY-4.0
+published: 2026-07-22
+representation_note: "The TXT files in this folder are readable text extractions for inspection and diffing. The canonical archived artefacts remain the Zenodo DOCX and PTC ZIP files."
+canonical_files:
+  ES: {name: "ARCH_v0.3_ES.docx", md5: "49d75ac9499c463d5901c052f6f58421"}
+  EN: {name: "ARCH_v0.3_EN.docx", md5: "95e5254531000faf0c0c44e4b3d7759f"}
+  FR: {name: "ARCH_v0.3_FR.docx", md5: "abff921e1b88e8e1c26dcee5423bc164"}
