@@ -1,4 +1,8 @@
 <p align="center">
+  <img src="assets/ptc-banner.jpg" alt="PTC / CTP — Canal Transparency Protocol" width="100%">
+</p>
+
+<p align="center">
   <img src="assets/brand/ptc-ctp-banner.png" alt="PTC / CTP — Canal Transparency Protocol" width="100%">
 </p>
 
