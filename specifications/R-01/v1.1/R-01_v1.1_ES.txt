@@ -1,0 +1,198 @@
+ESPECIFICACIÓN DE TEXTO CANÓNICO
+DEL PROTOCOLO DE TRANSPARENCIA CANALISTA (PTC)
+R-01 · v 1.1
+Documento normativo — referencia de implementación del objeto canónico
+21 de julio de 2026 · ORCID: 0009-0000-8891-7021 · CC BY 4.0
+DOI: 10.5281/zenodo.21406620
+En caso de discrepancia entre las versiones lingüísticas de esta especificación, prevalece la versión española.
+Naturaleza de este documento. Este documento define las propiedades formales del objeto canónico del Protocolo de Transparencia Canalista (PTC): su normalización, el cálculo de las preimágenes de los hashes, y el perímetro y extracción del artefacto TXT. No define la semántica de los campos del bloque PTC ni los estados globales de validación — esas materias pertenecen a PTC-F y a ARCH respectivamente, cada una con propietario normativo único. Es una especificación del protocolo, no de ninguna implementación concreta. Cualquier implementación que produzca el objeto canónico descrito aquí es conforme, independientemente del lenguaje de programación, la plataforma o el entorno de ejecución utilizados. El identificador normativo de este documento es R-01.
+Propósito e identificación
+Propósito
+El objeto canónico resuelve un problema de interoperabilidad: garantizar que dos documentos con el mismo contenido semántico produzcan el mismo hash, independientemente de diferencias irrelevantes como la marca de orden de bytes, los saltos de línea o los espacios al final de línea.
+Identificación normativa
+El identificador normativo de este documento es R-01. Es referenciado por la Arquitectura Normativa del Protocolo de Transparencia Canalista (PTC) v0.3 (DOI: 10.5281/zenodo.21406665) como fuente de las reglas de normalización del objeto canónico.
+Glosario
+Los siguientes términos se usan con significado técnico preciso en todo el documento:
+Principio de conformidad
+Dos implementaciones conformes deben producir exactamente el mismo objeto canónico codificado y los mismos valores de hash para una misma entrada canónica. Si dos implementaciones que aplican correctamente este documento producen hashes distintos sobre la misma entrada, al menos una de ellas contiene un error de implementación.
+Parte I — Definición del objeto canónico
+1.1 Qué es el objeto canónico
+El objeto canónico es la representación textual normalizada de un contenido sobre el que se genera una declaración verificable. Es la entrada al motor del protocolo y la base sobre la que se calculan todos los hashes criptográficos.
+El objeto canónico tiene dos propiedades formales:
+Es una cadena de caracteres Unicode normalizada según las reglas definidas en la Parte II.
+Para el cálculo de hashes, esta cadena se representa en bytes UTF-8 (objeto canónico codificado). Esta representación en bytes es la entrada directa a la función SHA-256.
+La distinción entre objeto canónico (cadena Unicode) y objeto canónico codificado (bytes UTF-8) es importante: el artefacto TXT almacena el texto como cadena Unicode; los hashes se calculan siempre sobre los bytes UTF-8 de esa cadena. La conversión desde otras codificaciones (UTF-16, Latin-1, Windows-1252) hasta Unicode queda fuera del alcance de esta especificación y es responsabilidad del adaptador de entrada.
+Cuando no se especifica otro modo, el protocolo opera en Modo Contenido. El Modo Referencia debe activarse explícitamente mediante el uso del adaptador CSV+URL, definido en la Arquitectura Normativa del Protocolo de Transparencia Canalista (PTC) v0.3.
+1.2 Qué no es el objeto canónico
+El objeto canónico no es el archivo original. Es el resultado de aplicar las reglas de normalización definidas en este documento sobre el contenido de origen.
+Dos archivos distintos pueden producir el mismo objeto canónico. Y el mismo archivo puede producir objetos canónicos distintos si se aplican reglas de normalización distintas.
+Parte II — Reglas de normalización
+Las siguientes reglas se aplican en orden estricto sobre la cadena de texto de entrada. El resultado de aplicar todas las reglas es el objeto canónico.
+2.0 Normalización Unicode
+No se aplica ninguna normalización Unicode (NFC, NFD, NFKC ni equivalente). Los caracteres Unicode se conservan exactamente en la forma en que aparecen en el texto de entrada. Dos cadenas visualmente idénticas pero con distinta representación Unicode producirán hashes distintos y ambas son igualmente válidas. Es responsabilidad del autor o del adaptador de entrada garantizar la consistencia de la representación Unicode si esto es relevante para su caso de uso.
+2.1 Eliminación de marca de orden de bytes (BOM)
+Si la cadena comienza con el carácter U+FEFF en la posición 0, ese carácter debe eliminarse. Las ocurrencias de U+FEFF en cualquier otra posición se conservan como parte del contenido semántico del documento.
+Razón: la BOM en posición inicial no forma parte del contenido semántico. U+FEFF en posiciones no iniciales es un carácter de espacio de ancho cero con valor semántico propio.
+2.2 Normalización de saltos de línea
+Todos los saltos de línea deben convertirse a LF (U+000A). Los saltos CRLF (U+000D U+000A) y los CR aislados (U+000D) deben tratarse como un único LF. Ningún otro carácter se modifica durante este paso.
+Razón: distintos sistemas operativos producen distintos saltos de línea para el mismo contenido.
+2.3 Eliminación de espacios al final de línea
+Todos los espacios (U+0020) y tabulaciones (U+0009) se eliminan cuando aparecen inmediatamente antes de un carácter LF, o cuando aparecen al final de la cadena de entrada (es decir, tras la última línea, si esta no termina en LF en el momento de aplicar esta regla). El carácter LF que termina cada línea se conserva.
+Razón: los espacios finales son invisibles para el lector humano pero alteran el hash.
+2.4 Normalización del final del objeto canónico documental
+El objeto canónico documental debe terminar con exactamente un carácter LF. Si la cadena termina con varios LF consecutivos, deben reducirse a uno. Si no termina con ningún LF, debe añadirse uno.
+Esta regla se aplica al objeto canónico documental — el prefijo, antes de anexar el bloque PTC. El artefacto canónico completo, una vez anexado el bloque PTC, sigue una regla de terminación distinta: ver 5.1.
+2.5 Caracteres de control
+Cualquier carácter de control distinto de LF (U+000A), CR (U+000D), espacio (U+0020) y tabulación (U+0009) se considera contenido semántico del documento y se conserva sin modificación.
+Nota: esta regla cubre caracteres como NULL (U+0000), tabulación vertical (U+000B), salto de página (U+000C) y NEL (U+0085).
+2.6 Codificación para el cálculo de hashes
+Tras aplicar las reglas 2.0 a 2.5, la cadena Unicode resultante (objeto canónico) se representa en bytes UTF-8. Esta representación (objeto canónico codificado) es la entrada directa a la función SHA-256. No se aplica ninguna otra transformación de codificación.
+Parte III — La cadena canónica de referencia
+Cuando el objeto que se certifica no es un contenido textual sino una referencia documental (Modo Referencia), el motor opera sobre una cadena canónica de referencia.
+3.1 Composición
+La cadena canónica de referencia se construye concatenando dos líneas, en este orden exacto:
+CSV: <valor>
+URL: <valor>
+La primera línea contiene la etiqueta literal «CSV: » seguida del Código Seguro de Verificación (CSV) o identificador oficial del documento.
+La segunda línea contiene la etiqueta literal «URL: » seguida de la URL de acceso o verificación del documento.
+Cada línea termina en LF (U+000A). La cadena completa termina en el LF de la segunda línea.
+Restricciones sobre «<valor>» en ambos campos, verificadas antes de cualquier otra transformación:
+No puede contener los caracteres CR (U+000D) ni LF (U+000A) en ninguna posición.
+No puede tener espacios (U+0020) ni tabulaciones (U+0009) al principio ni al final.
+No puede estar vacío.
+No existe ningún mecanismo de escape para estos caracteres en v1.1; un CSV o URL que los necesite no puede representarse mediante este adaptador.
+Ejemplo:
+CSV: ABC123XYZ
+URL: https://sede.administracion.gob.es/verifica/ABC123XYZ
+3.2 Normalización de la cadena de referencia
+La cadena canónica de referencia, una vez construida según 3.1, se somete a las mismas reglas de normalización de la Parte II que cualquier objeto canónico documental (incluida la regla 2.4 — debe terminar en exactamente un LF).
+Parte IV — Cálculo de hashes
+El motor calcula tres hashes, todos mediante SHA-256 sobre una preimagen codificada en UTF-8. Cada hash tiene una preimagen distinta: hash_doc_sha256 se calcula sobre el objeto canónico documental; hash_ptc_sha256, sobre la representación física del bloque PTC excluyendo únicamente la línea del propio campo; y hash_ethical_context_sha256, sobre la concatenación lógica definida en 4.3.
+4.1 hash_doc_sha256
+SHA-256 del objeto canónico codificado del documento, sin el bloque PTC. En Modo Contenido, el objeto canónico es el texto normalizado según la Parte II. En Modo Referencia, el objeto canónico es la cadena de referencia definida en la Parte III.
+4.2 hash_ptc_sha256
+Contenido del bloque para el cálculo
+El bloque PTC que se hashea incluye la línea «<PTC>», todos los campos en formato «clave: valor» en el orden normativo definido por PTC-F, y la línea «</PTC>». Se excluye únicamente la línea que contiene el campo hash_ptc_sha256. El orden de los campos es normativo: permutar dos campos produce un hash distinto.
+El cálculo sigue este proceso en dos estados:
+Estado de cálculo: construir el bloque PTC completo excluyendo la línea «hash_ptc_sha256: …», respetando el orden normativo de campos. Calcular SHA-256 sobre los bytes UTF-8 de ese bloque.
+Estado final: insertar la línea «hash_ptc_sha256: <valor calculado>» en su posición correcta. El artefacto canónico contiene el bloque en estado final.
+La preimagen usada para este cálculo termina exactamente en el carácter «>» que cierra «</PTC>» y no incluye ningún carácter posterior. Un artefacto conforme no puede contener ningún carácter después de ese «>» — la presencia de cualquiera constituye una infracción del perímetro definido en 5.1, no una variación admisible del cálculo.
+Existe una dependencia asimétrica entre los tres hashes: hash_ptc_sha256 se calcula sobre un bloque que ya contiene los valores declarados de hash_doc_sha256 y hash_ethical_context_sha256, y por tanto protege su integridad. Estos dos hashes, a su vez, no dependen de hash_ptc_sha256: hash_doc_sha256 depende solo del documento, y hash_ethical_context_sha256 depende solo de los ocho campos contextuales.
+4.3 hash_ethical_context_sha256
+SHA-256 de la cadena formada por los ocho campos contextuales separados por «|», sin separador inicial ni final. El formato exacto es:
+version|level|operator|date_utc|ai_system|co_creation_mode|human_review|purpose
+La preimagen utiliza los valores lógicos de estos campos, tal como los define PTC-F — no necesariamente su representación física en el bloque PTC. Para los campos escalares, el valor lógico es el contenido situado después del delimitador canónico «: ». Para purpose, cuando es multilínea, el valor lógico es el resultado de aplicar la gramática de continuaciones definida en PTC-F (desindentar y unir con LF las líneas de continuación), no las líneas físicas tal como aparecen serializadas.
+El carácter U+007C («|») está prohibido en el valor lógico de los ocho campos que integran esta preimagen. Esta versión no define ningún mecanismo de escape para él: su presencia en cualquiera de los ocho valores constituye una no conformidad.
+Cualquier diferencia en los valores lógicos, por mínima que sea, produce un hash distinto. hash_doc_sha256 y hash_ethical_context_sha256 son independientes entre sí. Ambos deben estar calculados e incorporados al bloque en estado de cálculo antes de obtener hash_ptc_sha256, porque sus valores declarados forman parte de la preimagen de este último.
+La presencia de hash_ethical_context_sha256 en el bloque PTC es obligatoria. Su verificación es igualmente obligatoria, sin excepción: una divergencia entre el valor declarado y el recalculado constituye una no conformidad, exactamente igual que una divergencia en hash_doc_sha256 o en hash_ptc_sha256.
+Parte V — El artefacto canónico
+El artefacto canónico es el documento que contiene el objeto canónico y el bloque PTC. Es el resultado que produce el motor y la entrada que consume el validador.
+5.1 Estructura
+El artefacto canónico TXT tiene la siguiente estructura, en este orden:
+El objeto canónico normalizado según la Parte II.
+Una línea que contiene exactamente el texto «<PTC>», sin caracteres adicionales.
+Los campos del bloque PTC, uno por línea, en el formato «clave: valor», en el orden normativo definido por PTC-F. Solo los campos que PTC-F autoriza expresamente pueden ocupar varias líneas mediante continuaciones — en PTC-F v1.2, únicamente purpose. Restricción: ningún valor de campo puede contener la cadena «</PTC>» como único contenido de una línea física.
+Una línea que contiene exactamente el texto «</PTC>», sin caracteres adicionales.
+El artefacto canónico termina inmediatamente en el carácter «>» que cierra la línea «</PTC>». No puede haber ningún carácter después de ese «>» — ni siquiera un único LF. La última línea física del artefacto termina en el final del artefacto, no en LF (ver definición de «línea física» en el Glosario).
+5.2 Extracción del bloque PTC
+Para extraer el bloque PTC de un artefacto, el validador debe seguir el algoritmo de anclaje desde el final. El algoritmo opera sobre líneas físicas, según la definición del Glosario:
+Buscar, de abajo arriba, la última línea física cuyo contenido sea exactamente «</PTC>». Si no existe → no conforme: artefacto sin PTC. Si existe cualquier carácter después de ese «>» — incluido un LF — → no conforme: contenido fuera del perímetro.
+Buscar, desde la línea «</PTC>» hacia arriba, la última línea física cuyo contenido sea exactamente «<PTC>». Si no existe → no conforme: bloque PTC malformado.
+Verificar que entre las líneas «<PTC>» y «</PTC>» encontradas no existe ninguna línea física cuyo contenido sea exactamente «</PTC>». Si existe → no conforme: delimitador de cierre ambiguo en el bloque PTC.
+El bloque PTC es el conjunto de líneas desde «<PTC>» hasta «</PTC>», ambas inclusive.
+El objeto canónico del documento es todo el contenido anterior a la línea «<PTC>», incluyendo su LF final.
+El algoritmo no aplica trim sobre los delimitadores. Una línea con espacios alrededor de «<PTC>» o «</PTC>» no es un delimitador válido.
+El paso 1 busca el último «</PTC>» del artefacto. Cualquier aparición anterior de las cadenas literales «<PTC>» o «</PTC>» — por ejemplo, dentro de un ejemplo ilustrativo de un documento que explica el propio formato — se trata como contenido documental ordinario. No genera ninguna condición especial por sí sola: queda protegida por hash_doc_sha256 exactamente igual que cualquier otro contenido del documento. Si ese contenido se altera después de certificado, la alteración se detecta por la divergencia del hash del documento, no por una regla especial sobre delimitadores.
+Nota de implementación: el algoritmo de extracción puede implementarse en streaming, procesando el artefacto línea a línea desde el final sin necesidad de cargarlo completo en memoria. Esta nota es informativa; no impone ninguna estrategia de implementación concreta.
+Parte VI — Casos de conformidad
+Los siguientes casos permiten a una implementación verificar que su normalización y cálculo de hashes producen resultados conformes con este documento. Se presentan en lenguaje natural, ordenados de simple a complejo; no constituyen todavía una suite ejecutable con bytes de entrada exactos, salida canónica exacta y hashes esperados serializados — esa suite, si se construye, será un documento separado.
+Los casos relativos a la forma canónica del bloque PTC, al campo version y al formato de date_utc pertenecen a PTC-F, no a este documento, porque dependen de reglas cuyo propietario normativo es PTC-F.
+Parte VII — Lo que este documento no define
+Este documento define el objeto canónico, sus reglas de normalización, las preimágenes de los tres hashes, y el perímetro y algoritmo de extracción del artefacto TXT. No define:
+Los campos del bloque PTC, su semántica, sus valores válidos, su gramática de continuación ni su orden normativo. Eso pertenece a PTC-F v1.2 (DOI: 10.5281/zenodo.21406680).
+El campo version, sus valores admitidos, ni el tratamiento de artefactos históricos. Eso pertenece a PTC-F v1.2.
+Los estados globales de validación (VALID, INVALID, VALID_WARNING) y la traducción de una no conformidad detectada aquí a uno de esos estados. Eso pertenece a la Arquitectura Normativa del Protocolo de Transparencia Canalista (PTC) v0.3 (DOI: 10.5281/zenodo.21406665). Este documento se limita a declarar cuándo una preimagen recalculada diverge de su valor declarado; qué estado global produce esa divergencia es una decisión de ARCH, definida una sola vez.
+Los adaptadores de entrada que transforman formatos concretos en objeto canónico. Eso pertenece a la Arquitectura Normativa del Protocolo de Transparencia Canalista (PTC) v0.3.
+La interfaz de usuario de ninguna implementación.
+El formato del artefacto de salida en formatos distintos de TXT.
+La conversión desde codificaciones distintas de Unicode. Eso es responsabilidad del adaptador de entrada.
+Referencias normativas
+Especificación producida dentro del ecosistema El Canal — ACS
+Manuel Barrera Anglada · ORCID: 0009-0000-8891-7021 · CC BY 4.0
+https://elcanal.es · https://validator.es
+Término
+Definición
+Objeto canónico
+La cadena de caracteres Unicode normalizada según las reglas de la Parte II. Es la entrada al cálculo de hashes.
+Objeto canónico codificado
+La representación en bytes UTF-8 del objeto canónico. Es la entrada directa a la función SHA-256.
+Artefacto canónico
+El documento completo que contiene el objeto canónico y el bloque PTC.
+Línea física
+Segmento de caracteres delimitado por un carácter LF (U+000A) o por el final del artefacto. La última línea física de un artefacto conforme —la que contiene «</PTC>»— termina en el final del artefacto, no en LF: ver 5.1.
+Caso
+Entrada
+Resultado esperado
+C-N01
+Texto plano sin BOM, saltos LF, sin espacios finales, un LF al final
+Sin transformación. El texto es su propio objeto canónico.
+C-N02
+Texto con BOM (U+FEFF) en posición 0
+BOM eliminada. El resto del texto permanece igual.
+C-N03
+U+FEFF en posición distinta de 0
+El carácter se conserva. No se elimina.
+C-N04
+Texto con saltos CRLF
+CRLF convertidos a LF.
+C-N05
+Línea con espacios al final: «texto␣␣␣»
+Espacios eliminados: «texto». LF de línea permanece.
+C-N06
+Documento sin LF al final
+Un LF añadido al final.
+C-N07
+Documento con tres LF al final
+Reducidos a un solo LF.
+C-N08
+Mismo texto normalizado en Windows y en Linux
+hash_doc_sha256 idéntico en ambos sistemas.
+Casos combinados
+Casos combinados
+Casos combinados
+C-N09
+BOM + CRLF + espacios finales + múltiples LF
+BOM eliminada, CRLF→LF, espacios eliminados, un LF al final.
+C-N10
+«á» como U+00E1 frente a «á» como U+0061+U+0301
+Hashes distintos. No se aplica NFC.
+C-N11
+Texto con caracteres Unicode no-ASCII: acentos, ñ, emojis
+El texto se preserva. UTF-8 incluye los bytes correctos.
+C-N12
+Artefacto con la cadena literal «<PTC>» en el cuerpo del documento, antes del bloque real
+Conforme. El bloque PTC se extrae desde el final; la mención previa queda protegida por hash_doc, sin generar ninguna condición especial.
+C-N13
+Secuencia completa: normalizar el documento; calcular hash_doc_sha256; calcular hash_ethical_context_sha256 a partir de los valores lógicos; construir el bloque PTC en estado de cálculo con ambos hashes declarados y sin la línea hash_ptc_sha256; calcular hash_ptc_sha256; insertar su línea en la posición normativa
+La ejecución repetida con las mismas entradas produce exactamente el mismo objeto canónico, el mismo bloque PTC y los mismos tres hashes.
+C-N14
+Artefacto donde un campo del bloque PTC contiene «</PTC>» como único contenido de una línea física
+No conforme: delimitador de cierre ambiguo en el bloque PTC.
+C-N15
+Artefacto con un carácter — incluido un LF — tras el «>» de «</PTC>»
+No conforme: contenido fuera del perímetro.
+Documento
+DOI
+Carácter
+PTC v0.0 — documento fundacional del protocolo
+10.5281/zenodo.17308564
+Obligatorio
+ACS-6 — estándar auditable para interacción humano–IA
+10.5281/zenodo.17749396
+Informativo
+PTC-F — Especificación Funcional del Protocolo de Transparencia Canalista (PTC) v1.2
+10.5281/zenodo.21406680
+Obligatorio
+Arquitectura Normativa del Protocolo de Transparencia Canalista (PTC) v0.3
+10.5281/zenodo.21406665
+Obligatorio para implementadores
