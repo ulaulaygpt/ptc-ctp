@@ -1,0 +1,354 @@
+SPÉCIFICATION FONCTIONNELLE DU
+PROTOCOLE DE TRANSPARENCE CANALISTE (PTC)
+PTC-F · v 1.2
+Document normatif — champs, valeurs logiques et forme canonique du bloc PTC
+21 juillet 2026 · ORCID: 0009-0000-8891-7021 · CC BY 4.0
+DOI: 10.5281/zenodo.21406680
+En cas de divergence entre les versions linguistiques de cette spécification, la version espagnole prévaut.
+Nature de ce document. PTC-F définit de manière exclusive les champs du bloc PTC, leur ordre, leur caractère obligatoire, leurs valeurs admises, leurs valeurs logiques, leur grammaire physique, leur sérialisation canonique et la correspondance entre hash_scope et l’objet certifié. Il ne définit pas les préimages ni le calcul des hachages, qui appartiennent à R-01, ni les états globaux de validation, qui appartiennent à ARCH. La conformité syntaxique d’une déclaration ne démontre pas la vérité matérielle de ce qui est déclaré.
+Conventions normatives. DOIT et NE DOIT PAS expriment des exigences de conformité ; DEVRAIT exprime une bonne pratique recommandée mais non obligatoire ; PEUT exprime une option permise. Les exemples sont illustratifs et ne font pas partie de la norme.
+Partie I — Forme canonique du bloc PTC
+1.1 Délimiteurs et bloc normatif
+Le bloc PTC normatif DOIT commencer par une ligne physique dont le contenu est exactement :
+<PTC>
+Et DOIT se terminer par une ligne physique dont le contenu est exactement :
+</PTC>
+R-01 définit l’algorithme bottom-anchored qui localise ce bloc à la fin de l’artefact et le périmètre exact du TXT. Les apparitions antérieures des chaînes «<PTC>» ou «</PTC>» dans le corps documentaire sont considérées comme contenu ordinaire protégé par hash_doc_sha256 ; elles ne constituent pas par elles-mêmes des blocs normatifs supplémentaires et ne génèrent pas de condition particulière.
+Dans le bloc PTC, LF (U+000A) est le seul séparateur de lignes admis. Le caractère CR (U+000D) NE DOIT PAS apparaître en quelque position que ce soit dans le bloc. La ligne finale «</PTC>» se termine à la fin de l’artefact, sans LF postérieur, conformément à R-01.
+1.2 Ordre normatif des champs
+Les champs DOIVENT apparaître exactement dans cet ordre :
+version
+level
+operator
+date_utc
+ai_system
+co_creation_mode
+human_review
+purpose
+hash_scope
+hash_doc_sha256
+hash_ptc_sha256
+hash_ethical_context_sha256
+doi
+orcid
+Les douze premiers champs sont obligatoires. doi et orcid sont optionnels et indépendants : l’un peut apparaître sans l’autre. Une clé inconnue, dupliquée ou hors ordre constitue une non-conformité.
+1.3 Grammaire d’une ligne scalaire
+Chaque champ scalaire et la première ligne physique de purpose DOIVENT être sérialisés selon la forme physique exacte :
+clé: valeur
+Cette forme implique :
+Aucun caractère avant la clé.
+La clé littérale exacte définie par cette spécification.
+Un unique caractère «:» immédiatement après la clé.
+Exactement un espace U+0020 immédiatement après «:».
+Dans les champs scalaires, une valeur logique non vide. Dans purpose, le premier fragment PEUT être vide à condition que la valeur logique complète contienne de l’information.
+Dans les champs scalaires et dans le premier fragment non vide de purpose, U+0020 et U+0009 NE DOIVENT PAS apparaître au début ou à la fin de la valeur.
+Aucun CR ni LF dans la valeur scalaire.
+Les espaces et tabulations internes font partie de la valeur logique. Le caractère «:» PEUT apparaître dans la valeur ; seul le premier «:» de la ligne sépare clé et valeur. Aucun autre caractère Unicode n’est supprimé par une opération générique de trim : des caractères tels que U+00A0 font partie de la valeur lorsqu’ils apparaissent.
+Une ligne physique vide dans le bloc n’est pas conforme. La seule représentation permise d’une ligne logique vide est une continuation vide de purpose, constituée de ses deux espaces syntaxiques.
+1.4 Présence et contenu
+Tous les champs obligatoires DOIVENT être présents. La simple présence d’une clé ne suffit pas : sa valeur logique DOIT contenir de l’information et NE DOIT PAS être composée exclusivement d’espaces, de tabulations ou de caractères LF.
+Un champ optionnel, lorsqu’il est présent, DOIT également avoir une valeur non vide et respecter sa position normative.
+1.5 Grammaire multiligne de purpose
+purpose est le seul champ que PTC-F v1.2 autorise à être représenté sur plusieurs lignes physiques.
+La première ligne utilise le même délimiteur canonique que la grammaire scalaire. Son premier fragment PEUT être vide uniquement lorsqu’une continuation apporte du contenu et que la valeur logique complète n’est pas composée exclusivement de U+0020, U+0009 et LF :
+purpose: première ligne
+Chaque continuation commence par deux espaces U+0020 syntaxiques :
+purpose: première ligne
+  deuxième ligne
+  troisième ligne
+Les deux premiers espaces sont supprimés lors de l’obtention de la valeur logique. Tout caractère suivant appartient au contenu, y compris les espaces ou tabulations supplémentaires. Par conséquent, une ligne physique peut commencer par plus de deux espaces lorsque le contenu logique de la continuation commence lui-même par des espaces.
+La valeur logique est obtenue en concaténant la première ligne et toutes les continuations, dans leur ordre, avec un LF entre les valeurs :
+première ligne\ndeuxième ligne\ntrosième ligne
+Ne sont pas conformes :
+une continuation sans champ précédent ;
+une continuation associée à un champ autre que purpose ;
+une ligne utilisant une tabulation ou moins de deux espaces comme préfixe de continuation ;
+une continuation dont la valeur logique est exactement «</PTC>» ;
+un purpose dont la valeur logique complète est vide ou composée exclusivement de U+0020, U+0009 et LF.
+1.6 Forme canonique reconstruite
+Une implémentation PEUT utiliser un analyseur tolérant pour produire des diagnostics, mais la conformité physique est stricte. Une fois les champs interprétés, le bloc reçu DOIT coïncider octet par octet avec la sérialisation canonique que produirait un générateur conforme :
+serialize(parse(bloc_reçu)) = bloc_reçu
+Cette vérification empêche qu’un bloc avec des hachages autocohérents soit accepté lorsqu’il utilise une forme alternative — par exemple, un espace avant une clé, deux espaces après «:», des espaces terminaux ou une disposition non canonique.
+Partie II — Champs déclaratifs
+Les champs déclaratifs expriment des engagements de l’opérateur. Le protocole démontre que la déclaration existe et demeure intègre ; il ne démontre pas automatiquement qu’elle est vraie.
+2.1 version
+Valeur unique admise par ce profil :
+R-01
+version identifie le profil normatif de l’artefact, non la version du logiciel générateur.
+La valeur historique :
+6
+correspond à des artefacts antérieurs liés à ACS-6. PTC-F v1.2 ne définit pas de profil de validation rétrospective pour ceux-ci ; par conséquent, version: 6 n’est pas conforme avec ce profil. Une future compatibilité historique nécessiterait une spécification séparée et explicite.
+2.2 level
+Valeurs fermées :
+Lorsque other est utilisé, l’opérateur DOIT expliquer le niveau dans purpose. Le validateur peut vérifier que purpose n’est pas vide, mais ne peut pas évaluer automatiquement la suffisance matérielle de cette explication.
+Il est RECOMMANDÉ d’inclure doi et orcid dans les artefacts extended, et orcid dans les artefacts standard.
+2.3 operator
+Texte scalaire non vide identifiant la personne, l’équipe ou l’organisation responsable du processus et de la déclaration. PEUT être un nom propre, un pseudonyme, une équipe ou une organisation.
+2.4 date_utc
+Format unique :
+YYYY-MM-DDTHH:MM:SSZ
+Exigences :
+année à quatre chiffres décimaux, dans la plage 0001–9999 (N-01 : l’année 0000 n’est pas conforme — décision de l’opérateur) ;
+mois 01–12 ;
+jour existant dans le mois et l’année déclarés, en appliquant le calendrier grégorien proléptique et ses règles d’années bissextiles ;
+heure 00–23 ;
+minutes 00–59 ;
+secondes 00–59 ;
+suffixe littéral Z.
+La forme courte YYYY-MM-DD n’est pas conforme avec PTC-F v1.2. Une chaîne d’apparence correcte mais avec une date impossible — par exemple, le 30 février — n’est pas non plus conforme. Une année 0000, même si elle a la forme à quatre chiffres et que le reste de la date est calendairement valide, n’est pas non plus conforme.
+2.5 ai_system
+Texte scalaire non vide identifiant le ou les systèmes d’IA participants avec une précision suffisante pour qu’un tiers comprenne quelles capacités étaient disponibles.
+Il est RECOMMANDÉ d’indiquer le modèle et la version lorsqu’ils sont connus. Il n’existe pas d’énumération fermée.
+2.6 co_creation_mode
+Texte scalaire non vide décrivant comment l’opérateur et l’IA ont travaillé conjointement. Il n’existe pas d’énumération fermée.
+Exemples non normatifs :
+human-ai dialogue
+punctual assistance
+ai generation with supervision
+review and editing
+2.7 human_review
+Valeurs fermées :
+Le texte libre n’est pas admis dans ce champ. Une description supplémentaire peut être intégrée à purpose.
+2.8 purpose
+Texte logique non vide déclarant l’objet du document, le contexte de production et les conditions pertinentes de participation de l’IA.
+C’est le seul champ multiligne. Sa représentation et l’obtention de sa valeur logique sont régies par 1.5.
+2.9 Interdiction de U+007C dans la préimage éthique
+Le caractère U+007C («|») NE DOIT PAS apparaître dans la valeur logique de l’un quelconque de ces huit champs :
+version
+level
+operator
+date_utc
+ai_system
+co_creation_mode
+human_review
+purpose
+R-01 utilise «|» comme séparateur de la préimage de hash_ethical_context_sha256 ; cette version ne définit aucun mécanisme d’échappement.
+Partie III — Champs techniques
+Les champs techniques sont obligatoires et se situent après purpose. PTC-F définit leur type, leur position et leur relation avec l’objet déclaré. R-01 est le seul propriétaire normatif de leurs préimages et calculs.
+3.1 hash_scope
+Valeurs fermées :
+document_without_ptc_normalized
+reference_csv_url_normalized
+document_without_ptc_normalized
+Déclare le Mode Contenu. hash_doc_sha256 correspond à l’objet canonique documentaire obtenu conformément à R-01, sans le bloc PTC.
+reference_csv_url_normalized
+Déclare le Mode Référence. L’objet canonique documentaire DOIT être exactement la structure à deux lignes définie par R-01 :
+CSV: <valeur>
+URL: <valeur>
+Sa représentation exacte est :
+CSV: <valeur>\nURL: <valeur>\n
+La correspondance entre le périmètre déclaré et l’objet certifié est obligatoire. Une implémentation conforme DOIT :
+vérifier que l’objet normalisé contient exactement deux lignes de contenu et un LF terminal ;
+exiger les étiquettes littérales «CSV: » et «URL: » dans cet ordre ;
+extraire les deux valeurs ;
+reconstruire l’objet à l’aide du constructeur canonique défini par R-01 ;
+exiger l’égalité octet par octet entre l’objet reconstruit et l’objet documentaire normalisé.
+Un hash_scope de référence accompagné de texte arbitraire, de lignes inversées, d’une troisième ligne, de valeurs vides ou d’une représentation différente n’est pas conforme, même si les trois hachages ont été recalculés de manière autocohérente.
+La valeur document_without_ptc_normalized n’impose pas de structure particulière au contenu. Un document en Mode Contenu peut coïncider visuellement avec les deux lignes de référence ; le périmètre déclaré détermine son interprétation normative.
+3.2 hash_doc_sha256
+Chaîne hexadécimale minuscule de exactement 64 caractères :
+[0-9a-f]{64}
+Certifie l’intégrité de l’objet canonique documentaire. Son calcul est défini exclusivement dans R-01 §4.1.
+3.3 hash_ptc_sha256
+Chaîne hexadécimale minuscule de exactement 64 caractères :
+[0-9a-f]{64}
+Certifie l’intégrité de la déclaration complète. Son calcul est défini exclusivement dans R-01 §4.2.
+3.4 hash_ethical_context_sha256
+Chaîne hexadécimale minuscule de exactement 64 caractères :
+[0-9a-f]{64}
+Protège les huit valeurs logiques contextuelles indiquées dans R-01 §4.3. Le champ est obligatoire et sa vérification l’est tout autant. PTC-F ne redéfinit pas la formule ni n’attribue d’états globaux : R-01 définit la préimage et ARCH traduit toute non-conformité en résultat global correspondant.
+3.5 Règle commune de format des hachages
+Les trois champs de hachage :
+DOIVENT contenir exactement 64 caractères ;
+DOIVENT n’utiliser que 0–9 et a–f ;
+NE DOIVENT PAS utiliser de lettres majuscules ;
+NE DOIVENT PAS inclure un préfixe 0x, des espaces ni des séparateurs.
+Partie IV — Champs optionnels
+4.1 doi
+Texte scalaire optionnel et non vide qui identifie de manière persistante le document ou l’artefact dans son dépôt officiel.
+Format recommandé, non obligatoire :
+10.5281/zenodo.XXXXXXX
+4.2 orcid
+Texte scalaire optionnel et non vide qui identifie de manière persistante l’opérateur en tant qu’auteur ou chercheur.
+Format recommandé, non obligatoire :
+0000-0000-0000-0000
+PTC-F v1.2 ne valide pas matériellement l’existence ni la titularité d’un DOI ou d’un ORCID ; seuls leur déclaration et leur intégrité dans le bloc.
+Partie V — Exemple illustratif de bloc complet
+Les valeurs de hachage dans l’exemple sont fictives et le bloc ne constitue pas un vecteur de test.
+<PTC>
+version: R-01
+level: extended
+operator: Manuel Barrera Anglada
+date_utc: 2026-07-17T12:00:00Z
+ai_system: GPT-5.6 Thinking (OpenAI)
+co_creation_mode: human-ai dialogue
+human_review: full
+purpose: Exemple illustratif d’un bloc PTC.
+  La deuxième ligne fait partie de la valeur logique de purpose.
+hash_scope: document_without_ptc_normalized
+hash_doc_sha256: a3f8c2d1e9b4f7a0c5e2d8f1b6a3c0e7d4f1b8a5c2e9d6f3b0a7c4e1d8f5b2a9
+hash_ptc_sha256: b7e4d1c8f5a2e9b6d3f0c7e4a1d8f5b2c9e6d3a0f7e4b1d8c5f2a9e6d3b0c7e4
+hash_ethical_context_sha256: c5b2e9f6d3a0c7e4b1d8f5a2e9c6d3b0f7e4a1c8e5d2f9b6a3e0d7f4c1b8e5d2
+doi: 10.5281/zenodo.20000001
+orcid: 0009-0000-8891-7021
+</PTC>
+Partie VI — Cas de conformité
+Ces cas sont décrits en langage naturel. Ils ne remplacent pas une future suite exécutable avec des octets et des hachages attendus.
+Partie VII — Matières hors périmètre
+PTC-F ne définit pas :
+la normalisation de l’objet documentaire ;
+les préimages ni le calcul des trois hachages ;
+le périmètre final et l’algorithme bottom-anchored d’extraction ;
+les états globaux VALID, INVALID et VALID_WARNING ;
+l’architecture des adaptateurs et des représentations dérivées ;
+la vérité matérielle des déclarations de l’opérateur ;
+l’existence réelle ou la titularité des DOI et ORCID déclarés.
+Ces matières appartiennent, selon le cas, à R-01 et à ARCH.
+Références normatives
+Spécification produite au sein de l’écosystème El Canal — ACS
+Manuel Barrera Anglada · ORCID: 0009-0000-8891-7021 · CC BY 4.0
+https://elcanal.es · https://validator.es
+Valeur
+Engagement déclaratif
+basic
+L’IA a été utilisée de manière ponctuelle et instrumentale pour des tâches délimitées.
+standard
+Il y a eu co-création active ; l’opérateur a dirigé le processus et pris les décisions de fond.
+extended
+Le processus de co-création a été intensif et dispose d’une traçabilité descriptible.
+other
+Aucune des valeurs précédentes ne décrit précisément le cas.
+Valeur
+Engagement déclaratif
+full
+L’opérateur a révisé intégralement le contenu et approuvé consciemment chaque partie.
+partial
+L’opérateur a révisé des sections ou des aspects concrets, mais pas tout le contenu en détail.
+light
+L’opérateur a effectué une vérification générale sans révision exhaustive.
+Cas
+Situation
+Résultat normatif
+C-F01
+Quatorze champs dans l’ordre normatif, tous en forme canonique
+Conforme
+C-F02
+Deux champs permutés
+Non conforme
+C-F03
+Clé inconnue
+Non conforme
+C-F04
+Clé dupliquée
+Non conforme
+C-F05
+Champ obligatoire absent
+Non conforme
+C-F06
+Champ obligatoire avec valeur logique vide ou composée uniquement de U+0020, U+0009 et LF
+Non conforme
+C-F07
+Champ optionnel présent mais vide
+Non conforme
+C-F08
+Espace avant une clé ou plus d’un espace après «:»
+Non conforme, même avec des hachages recalculés
+C-F09
+CR en quelque position que ce soit dans le bloc PTC
+Non conforme
+C-F10
+purpose multiligne avec deux espaces syntaxiques dans chaque continuation
+Conforme
+C-F10a
+Premier fragment de purpose vide et continuation postérieure avec contenu
+Conforme
+C-F10b
+Troisième espace physique après les deux espaces syntaxiques de continuation
+Conforme ; le troisième espace appartient au contenu logique
+C-F10c
+U+00A0 au bord d’une valeur scalaire
+Conforme ; le trim Unicode générique n’est pas appliqué
+C-F10d
+Premier fragment non vide de purpose avec U+0020 ou U+0009 à l’un de ses bords
+Non conforme
+C-F11
+Continuation orpheline
+Non conforme
+C-F12
+Continuation dans un champ autre que purpose
+Non conforme
+C-F13
+Continuation logique exactement «</PTC>»
+Non conforme
+C-F14
+version: R-01
+Conforme
+C-F15
+Version inconnue
+Non conforme
+C-F16
+version: 6
+Non conforme avec ce profil historique non implémenté
+C-F17
+Date UTC complète et calendairement existante
+Conforme
+C-F18
+Date courte YYYY-MM-DD
+Non conforme
+C-F19
+Date au format correct mais avec des valeurs impossibles
+Non conforme
+C-F20
+Hachage avec des majuscules, une longueur différente de 64 ou des caractères non hexadécimaux
+Non conforme
+C-F21
+human_review hors de full, partial, light
+Non conforme
+C-F22
+level hors de basic, standard, extended, other
+Non conforme
+C-F23
+U+007C dans l’un quelconque des huit champs éthiques
+Non conforme
+C-F24
+hash_scope inconnu
+Non conforme
+C-F25
+Périmètre de référence avec corps canonique à deux lignes
+Conforme
+C-F26
+Périmètre de référence avec texte arbitraire
+Non conforme
+C-F27
+Périmètre de référence avec lignes inversées
+Non conforme
+C-F28
+Périmètre de référence avec troisième ligne ou valeur vide
+Non conforme
+C-F29
+Périmètre de contenu avec texte ordinaire
+Conforme
+C-F30
+Délimiteurs littéraux antérieurs dans le corps documentaire
+Ne produisent pas par eux-mêmes une non-conformité ; le dernier bloc bottom-anchored est le normatif
+C-F31
+date_utc: 0000-01-01T00:00:00Z
+Non conforme — année hors de la plage N-01 (0001–9999)
+C-F32
+date_utc: 0001-01-01T00:00:00Z
+Conforme — limite inférieure exacte de la plage N-01
+Document
+DOI
+Caractère
+R-01 — Spécification du Texte Canonique du Protocole de Transparence Canaliste (PTC) v1.1
+10.5281/zenodo.21406620
+Obligatoire
+Architecture Normative du Protocole de Transparence Canaliste (PTC) v0.3
+10.5281/zenodo.21406665
+Obligatoire pour les implémenteurs
+PTC v0.0 — document fondateur
+10.5281/zenodo.17308564
+Informatif
+ACS-6 — génération historique du protocole
+10.5281/zenodo.17749396
+Informatif
