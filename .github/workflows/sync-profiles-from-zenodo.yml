@@ -1,0 +1,139 @@
+name: Sync closed PTC profiles from Zenodo
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/sync-profiles-from-zenodo.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Download and verify closed profile artefacts
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/ptc-sync
+
+          fetch() {
+            local record="$1"
+            local name="$2"
+            local sha="$3"
+            curl --fail --location --retry 4 --retry-all-errors               "https://zenodo.org/records/${record}/files/${name}?download=1"               -o "/tmp/ptc-sync/${name}"
+            echo "${sha}  /tmp/ptc-sync/${name}" | sha256sum -c -
+          }
+
+          fetch 21830122 "2026-08-09_FRS-01_file-reference-sha256-v1_v0.3_ES_CONGELADA_TECNICAMENTE_SHA256-f1ddde9ab5a26ab2c4d1f71b194cf29a21e2306b418c3b878d1c239d4318ecc6.docx" "f1ddde9ab5a26ab2c4d1f71b194cf29a21e2306b418c3b878d1c239d4318ecc6"
+          fetch 21830122 "2026-08-09_FRS-01_file-reference-sha256-v1_v0.3_EN_TECHNICALLY_FROZEN_SHA256-95415ab27042a07e78ffb2af5790421c1fa6c4a61bcdd70e3bafe8a94e4c3afd.docx" "95415ab27042a07e78ffb2af5790421c1fa6c4a61bcdd70e3bafe8a94e4c3afd"
+          fetch 21830122 "2026-08-09_FRS-01_file-reference-sha256-v1_v0.3_FR_GELEE_TECHNIQUEMENT_SHA256-483a9cbb0a22dc660adfbc78d447c9b1cbb4dae8c7a1ed51678747b69e2435a1.docx" "483a9cbb0a22dc660adfbc78d447c9b1cbb4dae8c7a1ed51678747b69e2435a1"
+
+          fetch 21830169 "2026-08-09_PKG-02_Validator_Package_Format_2.0_v0.4_ES_CONGELADA_TECNICAMENTE_SHA256-6f526919e84917a05877ee59f666edbbaad93ba05e10478d620636997b68491a.docx" "6f526919e84917a05877ee59f666edbbaad93ba05e10478d620636997b68491a"
+          fetch 21830169 "2026-08-09_PKG-02_Validator_Package_Format_2.0_v0.4_EN_TECHNICALLY_FROZEN_SHA256-abf127c57ccd233aa82a8f6160f067b1c30b03d51383460a4c2247d5e71bab6e.docx" "abf127c57ccd233aa82a8f6160f067b1c30b03d51383460a4c2247d5e71bab6e"
+          fetch 21830169 "2026-08-09_PKG-02_Validator_Package_Format_2.0_v0.4_FR_GELEE_TECHNIQUEMENT_SHA256-e39e4c4989a5b3f4f5b206d3aae8c218361eb3027db6ba4900985e209a10f1e4.docx" "e39e4c4989a5b3f4f5b206d3aae8c218361eb3027db6ba4900985e209a10f1e4"
+
+          fetch 21830264 "2026-08-09_DCL-03_disclosure-notice-v1_v0.3_ES_CONGELADA_TECNICAMENTE_SHA256-e1b9ce5593b939b9c78eeb2ab35c0b558fcbea9b4289ee50132f4d30c00fb198.docx" "e1b9ce5593b939b9c78eeb2ab35c0b558fcbea9b4289ee50132f4d30c00fb198"
+          fetch 21830264 "2026-08-09_DCL-03_disclosure-notice-v1_v0.3_EN_TECHNICALLY_FROZEN_SHA256-fca37c05a6e182c13210fd9d124b4f3c1398268c6b499f0b98bed89e6fb893b5.docx" "fca37c05a6e182c13210fd9d124b4f3c1398268c6b499f0b98bed89e6fb893b5"
+          fetch 21830264 "2026-08-09_DCL-03_disclosure-notice-v1_v0.3_FR_GELEE_TECHNIQUEMENT_SHA256-9bb6ca0cff27e711f77c0e93d052d58cafc1ecc8a269d7ada77fcb35c343861d.docx" "9bb6ca0cff27e711f77c0e93d052d58cafc1ecc8a269d7ada77fcb35c343861d"
+
+      - name: Create readable text representations
+        shell: python
+        run: |
+          from pathlib import Path
+          import zipfile, xml.etree.ElementTree as ET
+
+          jobs = [
+            ("FRS-01","v0.3","ES","2026-08-09_FRS-01_file-reference-sha256-v1_v0.3_ES_CONGELADA_TECNICAMENTE_SHA256-f1ddde9ab5a26ab2c4d1f71b194cf29a21e2306b418c3b878d1c239d4318ecc6.docx"),
+            ("FRS-01","v0.3","EN","2026-08-09_FRS-01_file-reference-sha256-v1_v0.3_EN_TECHNICALLY_FROZEN_SHA256-95415ab27042a07e78ffb2af5790421c1fa6c4a61bcdd70e3bafe8a94e4c3afd.docx"),
+            ("FRS-01","v0.3","FR","2026-08-09_FRS-01_file-reference-sha256-v1_v0.3_FR_GELEE_TECHNIQUEMENT_SHA256-483a9cbb0a22dc660adfbc78d447c9b1cbb4dae8c7a1ed51678747b69e2435a1.docx"),
+            ("PKG-02","v0.4","ES","2026-08-09_PKG-02_Validator_Package_Format_2.0_v0.4_ES_CONGELADA_TECNICAMENTE_SHA256-6f526919e84917a05877ee59f666edbbaad93ba05e10478d620636997b68491a.docx"),
+            ("PKG-02","v0.4","EN","2026-08-09_PKG-02_Validator_Package_Format_2.0_v0.4_EN_TECHNICALLY_FROZEN_SHA256-abf127c57ccd233aa82a8f6160f067b1c30b03d51383460a4c2247d5e71bab6e.docx"),
+            ("PKG-02","v0.4","FR","2026-08-09_PKG-02_Validator_Package_Format_2.0_v0.4_FR_GELEE_TECHNIQUEMENT_SHA256-e39e4c4989a5b3f4f5b206d3aae8c218361eb3027db6ba4900985e209a10f1e4.docx"),
+            ("DCL-03","v0.3","ES","2026-08-09_DCL-03_disclosure-notice-v1_v0.3_ES_CONGELADA_TECNICAMENTE_SHA256-e1b9ce5593b939b9c78eeb2ab35c0b558fcbea9b4289ee50132f4d30c00fb198.docx"),
+            ("DCL-03","v0.3","EN","2026-08-09_DCL-03_disclosure-notice-v1_v0.3_EN_TECHNICALLY_FROZEN_SHA256-fca37c05a6e182c13210fd9d124b4f3c1398268c6b499f0b98bed89e6fb893b5.docx"),
+            ("DCL-03","v0.3","FR","2026-08-09_DCL-03_disclosure-notice-v1_v0.3_FR_GELEE_TECHNIQUEMENT_SHA256-9bb6ca0cff27e711f77c0e93d052d58cafc1ecc8a269d7ada77fcb35c343861d.docx"),
+          ]
+          ns = {"w":"http://schemas.openxmlformats.org/wordprocessingml/2006/main"}
+          for comp, ver, lang, name in jobs:
+            src=Path("/tmp/ptc-sync")/name
+            with zipfile.ZipFile(src) as z:
+              root=ET.fromstring(z.read("word/document.xml"))
+            paras=[]
+            for p in root.findall(".//w:p", ns):
+              parts=[]
+              for node in p.iter():
+                if node.tag == "{%s}t"%ns["w"]:
+                  parts.append(node.text or "")
+                elif node.tag == "{%s}tab"%ns["w"]:
+                  parts.append("\t")
+                elif node.tag == "{%s}br"%ns["w"]:
+                  parts.append("\n")
+              s="".join(parts).strip()
+              if s:
+                paras.append(s)
+            out=Path("specifications")/comp/ver/f"{comp}_{ver}_{lang}.txt"
+            out.parent.mkdir(parents=True,exist_ok=True)
+            out.write_text("\n\n".join(paras)+"\n",encoding="utf-8")
+
+      - name: Write provenance manifests
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat > specifications/FRS-01/v0.3/SOURCE.yml <<'EOF'
+          id: FRS-01
+          version: v0.3
+          doi: 10.5281/zenodo.21830122
+          archival_authority: Zenodo
+          license: CC-BY-4.0
+          representation: "Plain-text extraction generated from exact SHA-256-verified canonical DOCX artefacts."
+          canonical_sha256:
+            ES: f1ddde9ab5a26ab2c4d1f71b194cf29a21e2306b418c3b878d1c239d4318ecc6
+            EN: 95415ab27042a07e78ffb2af5790421c1fa6c4a61bcdd70e3bafe8a94e4c3afd
+            FR: 483a9cbb0a22dc660adfbc78d447c9b1cbb4dae8c7a1ed51678747b69e2435a1
+          EOF
+          cat > specifications/PKG-02/v0.4/SOURCE.yml <<'EOF'
+          id: PKG-02
+          version: v0.4
+          doi: 10.5281/zenodo.21830169
+          archival_authority: Zenodo
+          license: CC-BY-4.0
+          representation: "Plain-text extraction generated from exact SHA-256-verified canonical DOCX artefacts."
+          canonical_sha256:
+            ES: 6f526919e84917a05877ee59f666edbbaad93ba05e10478d620636997b68491a
+            EN: abf127c57ccd233aa82a8f6160f067b1c30b03d51383460a4c2247d5e71bab6e
+            FR: e39e4c4989a5b3f4f5b206d3aae8c218361eb3027db6ba4900985e209a10f1e4
+          EOF
+          cat > specifications/DCL-03/v0.3/SOURCE.yml <<'EOF'
+          id: DCL-03
+          version: v0.3
+          doi: 10.5281/zenodo.21830264
+          archival_authority: Zenodo
+          license: CC-BY-4.0
+          representation: "Plain-text extraction generated from exact SHA-256-verified canonical DOCX artefacts."
+          canonical_sha256:
+            ES: e1b9ce5593b939b9c78eeb2ab35c0b558fcbea9b4289ee50132f4d30c00fb198
+            EN: fca37c05a6e182c13210fd9d124b4f3c1398268c6b499f0b98bed89e6fb893b5
+            FR: 9bb6ca0cff27e711f77c0e93d052d58cafc1ecc8a269d7ada77fcb35c343861d
+          EOF
+
+      - name: Commit synchronized profiles
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add specifications/FRS-01 specifications/PKG-02 specifications/DCL-03
+          if git diff --cached --quiet; then
+            echo "No changes to commit."
+            exit 0
+          fi
+          git commit -m "Mirror readable FRS-01, PKG-02 and DCL-03 from canonical Zenodo artefacts"
+          git push
