@@ -15,6 +15,12 @@ This repository is intended for material whose nature is normative, technical, i
 | **PKG-02** | v0.4 | Validator Package Format 2.0 | https://doi.org/10.5281/zenodo.21830169 |
 | **DCL-03** | v0.3 | `disclosure-notice-v1` profile | https://doi.org/10.5281/zenodo.21830264 |
 
+## Readable specification mirror
+
+The repository now includes a `specifications/` tree with readable text representations of the closed public versions of **R-01 v1.1**, **PTC-F v1.2** and **ARCH v0.3** in Spanish, English and French. Each version directory carries a `SOURCE.yml` manifest tying the representation to its Zenodo DOI and canonical file checksums.
+
+These GitHub text representations are intended for inspection and diffing; **the Zenodo artefacts remain canonical**.
+
 ## Reference implementation
 
 **Validator v1.1 — Reference Implementation of the Canal Transparency Protocol (PTC/CTP)**  
