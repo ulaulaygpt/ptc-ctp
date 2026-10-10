@@ -1,0 +1,376 @@
+ARQUITECTURA NORMATIVA DEL PROTOCOLO
+DE TRANSPARENCIA CANALISTA (PTC)
+ARCH · v 0.3
+Documento normativo — gobernanza del corpus, separación entre protocolo e implementación, modos de operación, adaptadores y estados globales de validación
+21 de julio de 2026 · ORCID: 0009-0000-8891-7021 · CC BY 4.0
+DOI: 10.5281/zenodo.21406665
+En caso de discrepancia entre las versiones lingüísticas de esta especificación, prevalece la versión española.
+Naturaleza de este documento. ARCH define la arquitectura y la gobernanza del Protocolo de Transparencia Canalista (PTC): la relación entre sus especificaciones, la propiedad normativa única de cada concepto, la separación entre protocolo e implementación, los modos de operación, los contratos de adaptadores, los estados globales de validación y los requisitos para declarar una implementación conforme. ARCH no redefine las reglas de normalización, las preimágenes criptográficas ni la forma de los campos del bloque PTC; esas materias pertenecen respectivamente a R-01 y PTC-F.
+Convenciones normativas. DEBE y NO DEBE expresan requisitos de conformidad; SE RECOMIENDA expresa una buena práctica no obligatoria; PUEDE expresa una opción permitida. Las descripciones de validator.es y de los casos de referencia son informativas, salvo cuando una cláusula indique expresamente lo contrario.
+Parte 0 — Gobernanza del corpus normativo
+0.1 Funciones documentales
+El corpus distingue funciones normativas y documentales que NO DEBEN confundirse:
+Un documento NO DEBE asumir simultáneamente dos propietarios normativos incompatibles. Cuando necesite un concepto perteneciente a otro documento, DEBE referenciarlo y NO DEBE redefinirlo.
+0.2 Propietario normativo único
+Si dos documentos contienen reglas incompatibles sobre un mismo concepto, prevalece el documento propietario indicado en esta tabla. La discrepancia DEBE corregirse en la siguiente revisión coordinada del corpus.
+0.3 Corpus vigente
+El PTC v0.0, DOI 10.5281/zenodo.17308564, conserva carácter fundacional e histórico. ACS-6, DOI 10.5281/zenodo.17749396, es una referencia histórica e informativa, no un perfil implícitamente soportado por el corpus vigente.
+0.4 Versiones lingüísticas
+El español es la lengua normativa de precedencia. Las versiones inglesa y francesa DEBEN derivarse del mismo texto español congelado y conservar exactamente:
+identificadores y versiones;
+nombres de campos y valores enumerados;
+fórmulas, expresiones regulares y códigos de error;
+DOI y referencias cruzadas;
+orden de secciones, tablas y casos de conformidad.
+Una traducción no puede crear, eliminar ni modificar una obligación normativa.
+Parte I — Protocolo e implementación
+1.1 Independencia del protocolo
+El PTC existe independientemente de cualquier implementación concreta. validator.es es una implementación conforme de referencia, no el protocolo mismo.
+Consecuencias:
+validator.es PUEDE evolucionar, ser sustituido o dejar de existir sin extinguir el protocolo;
+terceros PUEDEN construir implementaciones conformes sin autorización ni acceso al código de referencia;
+la conformidad se demuestra frente al corpus normativo y sus pruebas, no frente a similitud visual con validator.es;
+una función presente en validator.es no pasa a ser normativa por el mero hecho de estar implementada.
+1.2 Capas del sistema
+1.3 Núcleo normativo compartido
+La generación y la validación DEBEN consumir las mismas operaciones normativas de normalización, serialización y cálculo criptográfico. Una implementación NO DEBE mantener algoritmos paralelos incompatibles para generar y validar.
+La generación recibe un objeto y una declaración estructurada, aplica las reglas comunes y produce un artefacto canónico.
+La validación recibe un artefacto posiblemente no confiable, lo extrae e interpreta y aplica las mismas operaciones comunes. La comparación se realiza en la capa correspondiente: el prefijo documental se normaliza conforme a R-01 antes de comprobar su hash, mientras que el bloque PTC recibido debe coincidir byte a byte con su serialización canónica. La normalización documental puede hacer equivalentes representaciones físicas distintas —por ejemplo, CRLF frente a LF o espacios terminales— sin que esa tolerancia se extienda a la forma física del bloque PTC.
+La lógica exclusiva de validación se limita a:
+extracción y decodificación estrictas;
+comparación;
+clasificación del resultado;
+diagnóstico.
+Las operaciones criptográficas y la serialización canónica NO DEBEN duplicarse fuera del núcleo común.
+1.4 Invariantes operativos
+Para toda entrada estructurada conforme x:
+validate(generate(x)) = VALID
+Para todo artefacto recibido y, un resultado VALID exige simultáneamente:
+normalize(document_prefix(y)) = canonical_document(y)
+serialize(parse(ptc_block(y))) = ptc_block(y)
+La primera igualdad opera sobre el objeto documental normalizado y permite las equivalencias que R-01 declara irrelevantes. La segunda opera sobre la representación física del bloque PTC y exige identidad byte a byte. No se exige que el artefacto bruto completo sea idéntico al generado antes de normalizar su prefijo documental.
+Estas expresiones son invariantes arquitectónicas. R-01 y PTC-F definen las operaciones concretas que las materializan.
+1.5 Compatibilidad por perfil y versión del corpus
+Una implementación DEBE declarar tanto el perfil de version soportado como las versiones de R-01, PTC-F y ARCH que aplica. El campo version del artefacto no contiene por sí solo la versión completa del corpus y no autoriza a inferir compatibilidad histórica.
+La implementación de referencia asociada a esta versión soporta el perfil R-01 interpretado conforme a R-01 v1.1, PTC-F v1.2 y ARCH v0.3. version: 6 identifica un perfil histórico no formalizado por PTC-F v1.2 y, por tanto, no se considera compatible.
+PTC-F v1.2 consolida correcciones de contradicciones previas del corpus. La regresión de los tres documentos fundacionales demuestra su compatibilidad concreta, pero no constituye una promesa universal sobre todo artefacto producido antes de esta consolidación.
+A partir de este corpus, cualquier cambio futuro que altere de forma incompatible la interpretación de un artefacto previamente conforme DEBE introducir un perfil de version nuevo o una regla de migración explícita. No DEBE reinterpretarse silenciosamente el mismo valor de version con semántica incompatible.
+Parte II — Modos de operación
+Los modos de operación expresan qué objeto se certifica. No son simples opciones de interfaz.
+2.1 Modo Contenido
+Se certifica el contenido textual disponible en el momento de la generación. El adaptador de entrada produce el objeto canónico documental conforme a R-01.
+PTC-F vincula este modo con:
+hash_scope: document_without_ptc_normalized
+2.2 Modo Referencia
+Se certifica una referencia documental compuesta por un identificador oficial y una URL, no el contenido remoto al que la referencia apunta.
+R-01 define el objeto canónico de dos líneas. PTC-F vincula este modo con:
+hash_scope: reference_csv_url_normalized
+La integridad del PTC demuestra que esa referencia fue declarada, pero no garantiza por sí misma que el recurso remoto continúe disponible, que su contenido no haya cambiado o que el repositorio mantenga la asociación.
+2.3 No equivalencia entre modos
+Dos PTC generados sobre un mismo documento material, uno en Modo Contenido y otro en Modo Referencia, certifican objetos normativos distintos y NO DEBEN compararse como si fueran la misma certificación.
+2.4 Correspondencia declarativa
+El valor de hash_scope DEBE corresponder a la forma real del objeto certificado. PTC-F es propietario de esa relación y R-01 del constructor canónico de referencia.
+Una declaración de Modo Referencia sobre un cuerpo arbitrario no es conforme aunque todos sus hashes hayan sido recalculados de forma autoconsistente.
+Parte III — Arquitectura de adaptadores
+3.1 Principio de separación
+El núcleo opera sobre objetos canónicos y declaraciones estructuradas. Los adaptadores operan sobre formatos y contextos de entrada o salida.
+La incorporación de un formato nuevo NO DEBE modificar las reglas criptográficas ni la serialización PTC. Si un formato exige cambiar el núcleo normativo para acomodar su sintaxis particular, el diseño del adaptador es incorrecto o requiere una nueva versión explícita del protocolo.
+3.2 Contrato del adaptador de entrada
+Todo adaptador de entrada DEBE declarar:
+Un adaptador conforme preserva el objeto certificado, no necesariamente los bytes ni la apariencia del archivo de origen.
+3.3 Adaptadores reconocidos en v0.3
+Los archivos TXT y Markdown se procesan mediante el adaptador de texto. La sintaxis Markdown forma parte del contenido certificado y se conserva como texto; no se interpreta ni se renderiza para construir un objeto distinto.
+3.4 Representaciones de salida
+TXT canónico
+Es el artefacto normativo completo: objeto canónico documental seguido del bloque PTC, con el perímetro definido por R-01.
+ZIP de distribución
+Es un contenedor de entrega. PUEDE incluir:
+una copia byte a byte del archivo fuente recibido, claramente identificada como fuente;
+el objeto canónico documental separado, sin bloque PTC;
+el TXT canónico completo;
+el bloque PTC aislado;
+un manifest y un README no normativos;
+representaciones derivadas en el formato de entrada u otros formatos.
+La inclusión del archivo fuente facilita la reproducción y auditoría del proceso de extracción, pero no convierte sus bytes en objeto normativo ni implica que los tres hashes PTC actuales protejan su identidad binaria. El manifest DEBE distinguir mediante roles la fuente, el objeto canónico, el artefacto canónico y las representaciones derivadas. El ZIP no sustituye al TXT como objeto criptográfico normativo salvo que una especificación futura defina explícitamente un paquete canónico hasheado.
+Markdown
+Cuando la entrada es Markdown, una implementación PUEDE ofrecer una representación .md con el bloque PTC incorporado. Si contiene exactamente el mismo texto Unicode que el TXT canónico, ambos archivos pueden ser equivalentes como contenido; el TXT sigue siendo la representación normativa designada por este corpus.
+DOCX y PDF
+Son representaciones derivadas para lectura o intercambio. La presencia visible de la declaración PTC mejora la accesibilidad humana, pero no convierte los bytes del DOCX o PDF en el objeto canónico definido por R-01.
+JSON
+No existe todavía una representación normativa JSON del artefacto. Cualquier implementación experimental DEBE etiquetarla como no normativa.
+Parte IV — Estados globales de validación
+Una validación DEBE producir exactamente uno de los siguientes estados globales.
+4.1 VALID
+VALID exige conjuntamente:
+perímetro y extracción conformes con R-01;
+perfil de version soportado;
+campos, valores lógicos, orden y forma canónica conformes con PTC-F;
+correspondencia entre hash_scope y objeto certificado;
+coincidencia de hash_doc_sha256;
+coincidencia de hash_ptc_sha256;
+coincidencia de hash_ethical_context_sha256;
+ausencia de cualquier otra no conformidad normativa;
+ausencia de una anomalía no crítica activa.
+4.2 INVALID
+INVALID se produce cuando existe al menos una no conformidad normativa. Entre otras:
+falta o malformación del bloque PTC;
+contenido fuera del perímetro;
+forma física no canónica;
+clave desconocida, duplicada, ausente o fuera de orden;
+valor obligatorio vacío o no permitido;
+perfil no soportado;
+fecha no conforme;
+hash_scope desconocido o incompatible con el objeto;
+divergencia de cualquiera de los tres hashes.
+La coincidencia de dos hashes no compensa la divergencia del tercero. En particular, una divergencia de hash_ethical_context_sha256 produce INVALID sin excepción.
+4.3 VALID_WARNING
+VALID_WARNING solo puede producirse cuando:
+no existe ninguna no conformidad;
+los tres hashes coinciden;
+la forma y el perímetro son canónicos;
+existe una anomalía no crítica definida expresamente por el perfil normativo vigente.
+El perfil vigente no define actualmente ningún supuesto activo de VALID_WARNING. El estado queda reservado. Una implementación NO DEBE inventar advertencias normativas ni usar este estado para suavizar un error.
+4.4 Precedencia y determinismo
+Si existen simultáneamente errores y advertencias, prevalece INVALID.
+Dadas las mismas entradas y el mismo corpus normativo, dos validadores conformes DEBEN producir el mismo estado global, aunque sus mensajes de diagnóstico puedan diferir.
+4.5 Privacidad y ejecución local
+La validación del artefacto TXT DEBE poder realizarse localmente, sin enviar el contenido a un servidor y sin requerir identificación del usuario. Una interfaz PUEDE ofrecer servicios auxiliares en línea, pero NO DEBE presentarlos como requisito criptográfico del protocolo.
+Parte V — Conformidad de implementaciones
+5.1 Declaración de conformidad
+Una implementación solo PUEDE declararse conforme si identifica:
+versiones de R-01, PTC-F y ARCH aplicadas;
+perfiles de version soportados;
+modos y adaptadores soportados;
+limitaciones experimentales;
+versión de su suite de pruebas.
+5.2 Requisitos mínimos
+Una implementación conforme con este corpus DEBE:
+aplicar R-01 v1.1;
+aplicar PTC-F v1.2;
+aplicar los estados y contratos de ARCH v0.3;
+utilizar un núcleo común para generación y validación;
+autovalidar todo artefacto generado antes de entregarlo;
+reconstruir y comparar la forma canónica durante la validación;
+verificar obligatoriamente los tres hashes;
+rechazar perfiles no soportados sin reinterpretarlos;
+superar la suite de conformidad publicada para las funciones que declare soportar.
+Mientras no exista una suite ejecutable publicada para una regla, la conformidad se evalúa mediante revisión de implementación, casos de conformidad documentados y pruebas reproducibles aportadas por el implementador. Esta situación DEBE declararse; no debe llamarse «vector ejecutable» a una descripción en lenguaje natural.
+5.3 Diagnósticos
+Los códigos y mensajes de error son útiles para interoperabilidad, pero el estado global no depende de su redacción. Una implementación PUEDE emitir varios diagnósticos para un mismo artefacto. El conjunto de diagnósticos no puede convertir un resultado INVALID en VALID_WARNING.
+Parte VI — Implementación conforme de referencia
+Esta parte es informativa y describe la implementación asociada a esta versión de ARCH.
+6.1 Funciones soportadas
+Generación en Modo Contenido a partir de TXT y Markdown.
+Generación en Modo Referencia CSV+URL.
+Validación del TXT y Markdown canónicos.
+Paquete de distribución con fuente preservada, objeto canónico separado, artefacto canónico y manifest de roles.
+Representación derivada Markdown y representación DOCX cuando supera una prueba de retorno.
+Lectura experimental de DOCX y PDF, sin elevar su extracción a regla normativa.
+JSON no forma parte del soporte conforme de v1.0.
+6.2 Núcleo único
+generate.js y validate.js DEBEN consumir ptc-core.js. Ninguno debe contener una segunda implementación de normalización, serialización o cálculo de hashes.
+La descripción del código no altera el principio de independencia: una tercera implementación puede usar otra estructura interna si reproduce exactamente el comportamiento normativo.
+Parte VII — Casos de referencia
+Los siguientes casos ilustran usos reales. Son informativos y no redefinen el protocolo.
+Parte VIII — Fuera de alcance y trabajo futuro
+No están definidos en ARCH v0.3:
+perfil histórico formal para version: 6;
+canonicalización normativa de JSON;
+canonicalización de HTML como contenido vivo;
+OCR normativo para PDF escaneado;
+representación canónica de imágenes o diagramas;
+API pública y sus mecanismos operativos;
+paquete canónico ZIP con hash propio;
+suite completa de fixtures criptográficos para todas las reglas;
+verificación material de la verdad de las declaraciones humanas;
+persistencia o identidad real de recursos remotos, DOI u ORCID.
+La mera inclusión en esta lista no autoriza su implementación como función conforme. Cada extensión requiere propietario normativo, especificación, versión y pruebas.
+Referencias normativas
+Documento producido dentro del ecosistema El Canal — ACS
+Manuel Barrera Anglada · ORCID: 0009-0000-8891-7021 · CC BY 4.0
+https://elcanal.es · https://validator.es
+Función
+Objeto
+Criterio
+Especificación
+Define una verdad normativa directamente implementable
+Sus reglas pueden contrastarse mediante casos o pruebas de conformidad
+Arquitectura
+Define relaciones, propietarios normativos, modos, adaptadores y criterios globales
+Referencia las especificaciones; no duplica sus reglas
+Planificación
+Describe evolución futura y trabajo pendiente
+No modifica por sí misma el estado normativo vigente
+Suite de conformidad
+Materializa reglas en entradas y resultados exactos y ejecutables
+Cada fixture identifica la regla que verifica
+Implementación
+Ejecuta el protocolo para usuarios concretos
+Puede cambiar sin alterar el protocolo
+Caso de referencia
+Muestra el protocolo en uso real
+Es un artefacto verificable, no una fuente normativa
+Concepto
+Propietario
+Normalización del objeto textual
+R-01
+Construcción del objeto canónico de referencia
+R-01
+Preimágenes y cálculo de los tres hashes
+R-01
+Perímetro del artefacto TXT y extracción bottom-anchored
+R-01
+Claves, orden, obligatoriedad y valores de los campos PTC
+PTC-F
+Valores lógicos, gramática física y serialización canónica del bloque
+PTC-F
+Perfil version, formato de date_utc y relación entre hash_scope y objeto
+PTC-F
+Gobernanza del corpus y jerarquía documental
+ARCH
+Separación entre protocolo, núcleo y adaptadores
+ARCH
+Modos de operación como categorías conceptuales
+ARCH
+Contratos de adaptadores y representaciones derivadas
+ARCH
+Estados globales VALID, INVALID y VALID_WARNING
+ARCH
+Criterios para declarar una implementación conforme
+ARCH
+Evolución planificada del corpus
+ROAD
+Identificador
+Título
+Versión
+DOI
+Función
+R-01
+Especificación de Texto Canónico del Protocolo de Transparencia Canalista (PTC)
+v1.1
+10.5281/zenodo.21406620
+Especificación
+PTC-F
+Especificación Funcional del Protocolo de Transparencia Canalista (PTC)
+v1.2
+10.5281/zenodo.21406680
+Especificación
+ARCH
+Arquitectura Normativa del Protocolo de Transparencia Canalista (PTC)
+v0.3
+10.5281/zenodo.21406665
+Arquitectura
+ROAD
+Roadmap del Protocolo PTC
+v0.1
+—
+Planificación
+Capa
+Función
+Criterio de éxito
+Conocimiento — ACS
+Marco conceptual transmisible
+Puede ser comprendido y continuado sin contexto privado
+Protocolo — PTC
+Reglas implementables y verificables
+Dos implementaciones conformes producen el mismo resultado canónico
+Suite de conformidad
+Evidencia ejecutable
+Una implementación puede probarse sin consultar a los autores
+Implementaciones
+Utilidad operativa
+Resuelven casos de uso respetando el protocolo
+Casos de referencia
+Evidencia de uso real
+Son públicos, persistentes y verificables
+Elemento
+Obligación
+Tipo aceptado
+Rechazar entradas que no pertenecen al tipo declarado
+Modo de operación
+Contenido o Referencia
+Objeto certificado
+Definir qué información se preserva normativamente
+Transformación
+Ser determinista y documentada
+Salida
+Entregar al núcleo el objeto canónico o los valores necesarios para construirlo
+Errores
+No sustituir silenciosamente una entrada inválida por otra distinta
+Adaptador
+Modo
+Estado normativo
+Texto → objeto canónico
+Contenido
+Definido por R-01 y soportado
+CSV+URL → objeto canónico de referencia
+Referencia
+Definido por R-01 y soportado
+DOCX → texto
+Contenido
+Experimental; la extracción no forma parte del objeto canónico normativo
+PDF → texto
+Contenido
+Experimental; la extracción no garantiza reproducibilidad entre herramientas
+JSON → objeto canónico
+Contenido
+No especificado; no debe anunciarse como soporte conforme
+HTML publicado
+Referencia
+Puede certificarse mediante una referencia; la canonicalización del HTML como contenido no está definida
+Elemento
+Valor
+Nombre
+validator.es
+URL
+https://validator.es
+Versión pública objetivo
+v1.0
+Núcleo común
+ptc-core.js
+Ejecución
+Navegador, con operaciones criptográficas locales mediante Web Crypto API
+Dependencias del núcleo
+Ninguna dependencia externa normativa
+Licencia documental
+CC BY 4.0
+Autor
+Manuel Barrera Anglada · ORCID 0009-0000-8891-7021
+DOI de la distribución portable
+10.5281/zenodo.21251714
+Evidencia de conformidad
+Suite integrada · 46 pruebas reproducibles
+Caso
+Título
+DOI
+Dominio
+CR-01
+The Silent Transformation: Psychosocial Risk Patterns in AI-Assisted Cognitive Work
+10.5281/zenodo.19801311
+Investigación / PRL
+CR-02
+Primera Consulta del Observatorio Provincial de Transparencia (Sevilla)
+10.5281/zenodo.19486305
+Administración pública / transparencia
+CR-03
+La Catedral Invisible — Manual para no llegar tarde a la próxima revolución
+10.5281/zenodo.18784420
+Ensayo / autoría humano–IA
+Documento
+DOI
+Carácter
+R-01 — Especificación de Texto Canónico del Protocolo de Transparencia Canalista (PTC) v1.1
+10.5281/zenodo.21406620
+Obligatorio
+PTC-F — Especificación Funcional del Protocolo de Transparencia Canalista (PTC) v1.2
+10.5281/zenodo.21406680
+Obligatorio
+PTC v0.0 — documento fundacional
+10.5281/zenodo.17308564
+Histórico e informativo
+ACS-6
+10.5281/zenodo.17749396
+Histórico e informativo
+Validator Portable — implementación de referencia
+10.5281/zenodo.21251714
+Informativo
