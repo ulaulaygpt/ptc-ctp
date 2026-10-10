@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="assets/brand/ptc-ctp-banner.png" alt="PTC / CTP — Canal Transparency Protocol" width="100%">
+</p>
+
 # PTC / CTP — Canal Transparency Protocol
 
 Public technical repository for the normative corpus of the **PTC — Protocolo de Transparencia Canalista / CTP — Canal Transparency Protocol**, developed within **El Canal — Applied Cognitive Symbology (ACS)**.
