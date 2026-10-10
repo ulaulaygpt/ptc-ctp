@@ -1,0 +1,11 @@
+id: R-01
+version: v1.1
+doi: 10.5281/zenodo.21406620
+archival_authority: Zenodo
+license: CC-BY-4.0
+published: 2026-07-22
+representation_note: "The TXT files in this folder are readable text extractions for inspection and diffing. The canonical archived artefacts remain the Zenodo DOCX and PTC ZIP files."
+canonical_files:
+  ES: {name: "R-01_v1.1_ES.docx", md5: "73841abc52657d1620220e6cca6b94e0"}
+  EN: {name: "R-01_v1.1_EN.docx", md5: "958f38fb3179358f493e646ca9335e21"}
+  FR: {name: "R-01_v1.1_FR.docx", md5: "c4a887c4fcf2b29d1fbaf83ac4d820c1"}
